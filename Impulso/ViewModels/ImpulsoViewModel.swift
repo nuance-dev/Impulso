@@ -45,6 +45,15 @@ class ImpulsoViewModel: ObservableObject {
         task.createdAt = Date()
         task.order = Int32(tasks.count)
         
+        // Add initial metrics
+        task.metrics = TaskMetrics(
+            impact: .medium,
+            fun: .medium,
+            momentum: .medium,
+            alignment: .medium,
+            effort: .medium
+        )
+        
         do {
             try context.save()
             fetchTasks()

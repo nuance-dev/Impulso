@@ -38,7 +38,7 @@ struct TaskCardView: View {
                         updatedMetrics.update(type: type, value: value)
                         onMetricUpdate(updatedMetrics)
                     }
-                    .opacity(isHovered ? 1 : 0.5)
+                    .opacity(isHovered ? 1 : 0.8)
                 }
                 
                 FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)

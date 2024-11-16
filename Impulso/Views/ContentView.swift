@@ -14,8 +14,8 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ImpulsoView(viewModel: viewModel)
-        }
+        ImpulsoView(viewModel: viewModel)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea()
     }
 }
