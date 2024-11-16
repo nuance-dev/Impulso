@@ -8,9 +8,9 @@ struct GlassCard: ViewModifier {
             .background(
                 ZStack {
                     if colorScheme == .dark {
-                        Color.black.opacity(0.2)
+                        Color.black.opacity(0.15)
                     } else {
-                        Color.white.opacity(0.8)
+                        Color.white.opacity(0.7)
                     }
                     
                     VisualEffectBlur(
@@ -19,19 +19,19 @@ struct GlassCard: ViewModifier {
                     )
                 }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(
-                            Color.primary.opacity(colorScheme == .dark ? 0.1 : 0.05),
-                            lineWidth: 1
+                            Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.04),
+                            lineWidth: 0.5
                         )
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .shadow(
-                color: Color.black.opacity(0.05),
-                radius: 10,
+                color: Color.black.opacity(0.03),
+                radius: 4,
                 x: 0,
-                y: 5
+                y: 2
             )
     }
 }

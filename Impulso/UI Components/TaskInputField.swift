@@ -6,33 +6,33 @@ struct TaskInputField: View {
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Image(systemName: "plus.circle")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
+                .font(.system(size: 12))
+                .foregroundColor(.secondary.opacity(0.7))
             
             TextField("Add a task...", text: $text)
-                .font(.system(size: 13))
+                .font(.system(size: 12))
                 .textFieldStyle(PlainTextFieldStyle())
                 .submitLabel(.done)
                 .onSubmit {
                     submit()
                 }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(backgroundColor)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.primary.opacity(0.1))
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.primary.opacity(0.06))
                 )
         )
     }
     
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.8)
+        colorScheme == .dark ? Color.black.opacity(0.15) : Color.white.opacity(0.7)
     }
     
     private func submit() {

@@ -10,29 +10,28 @@ struct TaskCardView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Completion Indicator
             CompletionIndicator(isCompleted: task.isCompleted, onComplete: onComplete)
+                .padding(.leading, 2)
             
             // Task Details
-            VStack(alignment: .leading, spacing: 4) {
-                // Task Description
+            VStack(alignment: .leading, spacing: 3) {
                 Text(task.taskDescription)
-                    .font(.headline)
-                    .foregroundColor(task.isCompleted ? .secondary : .primary)
+                    .font(.system(size: 13))
+                    .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
                     .strikethrough(task.isCompleted)
                 
-                // Priority Score
                 Text("Priority: \(Int(task.priorityScore))")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary.opacity(0.7))
                     .opacity(isHovered ? 1 : 0.7)
             }
             
             Spacer()
             
             // Right Side Controls
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 if let metrics = task.metrics {
                     MetricDots(metrics: metrics) { type, value in
                         var updatedMetrics = metrics
@@ -42,20 +41,18 @@ struct TaskCardView: View {
                     .opacity(isHovered ? 1 : 0.5)
                 }
                 
-                // Focus Indicator
                 FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(backgroundColor)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.primary.opacity(0.06))
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.primary.opacity(0.04))
                 )
-                .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
         )
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -66,9 +63,9 @@ struct TaskCardView: View {
     
     private var backgroundColor: Color {
         if colorScheme == .dark {
-            return Color.black.opacity(0.2)
+            return Color.black.opacity(0.15)
         } else {
-            return Color.white.opacity(0.8)
+            return Color.white.opacity(0.7)
         }
     }
 }

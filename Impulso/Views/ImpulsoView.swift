@@ -5,12 +5,12 @@ struct ImpulsoView: View {
     @State private var hoveredTaskId: UUID?
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             if viewModel.tasks.isEmpty {
                 emptyStateView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 6) {
                         ForEach(viewModel.tasks) { task in
                             TaskCardView(
                                 task: task,
@@ -30,18 +30,22 @@ struct ImpulsoView: View {
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
-                    .padding(.vertical, 16)
-                    .animation(.spring(response: 0.3), value: viewModel.tasks)
+                    .padding(.vertical, 12)
                 }
                 
                 Divider()
-                    .padding(.horizontal, -20)
+                    .opacity(0.3)
             }
             
             TaskInputField(onSubmit: viewModel.addTask)
         }
-        .padding(20)
-        .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
+        .padding(16)
+        .background(
+            VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow)
+                .overlay(
+                    Color.primary.opacity(0.03)
+                )
+        )
     }
     
     private var emptyStateView: some View {
