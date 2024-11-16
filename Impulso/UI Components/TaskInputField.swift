@@ -4,35 +4,34 @@ struct TaskInputField: View {
     @State private var text = ""
     let onSubmit: (String) -> Void
     @Environment(\.colorScheme) private var colorScheme
+    @FocusState private var isFocused: Bool
     
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "plus.circle")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary.opacity(0.7))
+        HStack(spacing: 12) {
+            Image(systemName: "plus.circle.fill")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary.opacity(0.6))
             
-            TextField("Add a task...", text: $text)
-                .font(.system(size: 12))
+            TextField("Press ⌘N or click here to create a task...", text: $text)
+                .font(.system(size: 14))
                 .textFieldStyle(PlainTextFieldStyle())
-                .submitLabel(.done)
-                .onSubmit {
-                    submit()
-                }
+                .focused($isFocused)
+                .onSubmit(submit)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(backgroundColor)
+            RoundedRectangle(cornerRadius: 8)
+                .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.5))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.primary.opacity(0.06))
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.primary.opacity(0.06), lineWidth: 1)
                 )
         )
-    }
-    
-    private var backgroundColor: Color {
-        colorScheme == .dark ? Color.black.opacity(0.15) : Color.white.opacity(0.7)
+        .onTapGesture {
+            isFocused = true
+        }
+        .keyboardShortcut("n", modifiers: .command)
     }
     
     private func submit() {

@@ -18,7 +18,6 @@ struct MetricDots: View {
                 .opacity(shouldShow(for: type) ? 1 : 0)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: isHovered)
     }
     
     private func shouldShow(for type: MetricType) -> Bool {
@@ -32,28 +31,36 @@ struct MetricDot: View {
     let value: TaskMetrics.MetricValue
     let onUpdate: (TaskMetrics.MetricValue) -> Void
     
+    @State private var isHovering = false
     @State private var showPopover = false
-    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        Button(action: {
-            showPopover.toggle()
-        }) {
+        Button(action: {}) {
             Image(systemName: type.iconName)
                 .font(.system(size: 11, weight: .light))
                 .foregroundColor(value == .unset ? .secondary.opacity(0.3) : value.color.opacity(0.8))
                 .frame(width: 20, height: 20)
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovering = hovering
+            if hovering {
+                showPopover = true
+            }
+        }
         .popover(isPresented: $showPopover, arrowEdge: .bottom) {
             MetricPopover(
                 type: type,
                 currentValue: value,
                 onUpdate: { newValue in
                     onUpdate(newValue)
-                    showPopover = false
                 }
             )
+            .onHover { hovering in
+                if !hovering && !isHovering {
+                    showPopover = false
+                }
+            }
         }
     }
 }

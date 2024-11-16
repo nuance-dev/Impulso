@@ -73,6 +73,7 @@ struct TaskData: Codable, Identifiable, Equatable {
     let completedAt: Date?
     let order: Int32
     let isFocused: Bool
+    let isBacklogged: Bool
     let metrics: TaskMetrics?
     let priorityScore: Double
     
@@ -83,6 +84,7 @@ struct TaskData: Codable, Identifiable, Equatable {
         self.completedAt = task.completedAt
         self.order = task.order
         self.isFocused = task.isFocused
+        self.isBacklogged = task.isBacklogged
         self.metrics = task.metrics
         self.priorityScore = task.priorityScore
     }

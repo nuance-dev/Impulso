@@ -132,15 +132,19 @@ extension ImpulsoTask: Comparable {
 }
 
 extension ImpulsoTask {
-    func update(from data: TaskData) {
-        self.id = data.id
-        self.description = data.description
-        self.createdAt = data.createdAt
-        self.completedAt = data.completedAt
-        self.order = data.order
-        self.isFocused = data.isFocused
-        self.metrics = data.metrics
-        self.priorityScore = data.priorityScore
+    func update(from taskData: TaskData) {
+        id = taskData.id
+        taskDescription = taskData.description
+        createdAt = taskData.createdAt
+        completedAt = taskData.completedAt
+        order = taskData.order
+        isFocused = taskData.isFocused
+        isBacklogged = taskData.isBacklogged
+        priorityScore = taskData.priorityScore
+        
+        if let metrics = taskData.metrics {
+            self.metrics = metrics
+        }
     }
 }
 
@@ -170,6 +174,16 @@ public enum MetricType: String, CaseIterable, Identifiable {
         case .momentum: return .green
         case .alignment: return .purple
         case .effort: return .red
+        }
+    }
+    
+    var title: String {
+        switch self {
+        case .impact: return "Impact"
+        case .fun: return "Fun Factor"
+        case .momentum: return "Momentum"
+        case .alignment: return "Alignment"
+        case .effort: return "Effort"
         }
     }
 }

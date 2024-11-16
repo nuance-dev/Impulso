@@ -13,19 +13,20 @@ struct TaskCardView: View {
         HStack(spacing: 12) {
             // Completion Indicator
             CompletionIndicator(isCompleted: task.isCompleted, onComplete: onComplete)
-                .padding(.leading, 2)
+                .padding(.leading, 20)
             
             // Task Details
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(task.taskDescription!)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14))
                     .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
                     .strikethrough(task.isCompleted)
                 
-                Text("Priority: \(Int(task.priorityScore))")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary.opacity(0.7))
-                    .opacity(isHovered ? 1 : 0.7)
+                if isHovered {
+                    Text("Priority: \(Int(task.priorityScore))")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary.opacity(0.7))
+                }
             }
             
             Spacer()
@@ -41,31 +42,19 @@ struct TaskCardView: View {
                 }
                 
                 FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)
+                    .padding(.trailing, 20)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .frame(height: 44)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(backgroundColor)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.primary.opacity(0.04))
-                )
-        )
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isHovered = hovering
+            Group {
+                if isHovered {
+                    Color(NSColor.selectedContentBackgroundColor).opacity(0.1)
+                } else {
+                    Color.clear
+                }
             }
-        }
-    }
-    
-    private var backgroundColor: Color {
-        if colorScheme == .dark {
-            return Color.black.opacity(0.15)
-        } else {
-            return Color.white.opacity(0.7)
-        }
+        )
     }
 }
 

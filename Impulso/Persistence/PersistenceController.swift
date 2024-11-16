@@ -12,17 +12,20 @@ class PersistenceController {
             .appendingPathComponent("Backups")
     }
     
-    init(inMemory: Bool = false) {
+    init() {
         container = NSPersistentContainer(name: "Impulso")
         
-        if inMemory {
-            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
-        }
+        // Add migration options
+        let description = container.persistentStoreDescriptions.first
+        description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
         
-        // Initialize persistent store
+        // Attempt to load stores with recovery options
         container.loadPersistentStores { description, error in
             if let error = error {
-                fatalError("Failed to load persistent stores: \(error)")
+                // First try to recover by removing the store
+                print("Error loading persistent stores: \(error)")
+                self.attemptStoreRecovery()
             }
         }
         
@@ -45,6 +48,35 @@ class PersistenceController {
             print("Error creating backup directory: \(error)")
         }
     }
+    
+    private func attemptStoreRecovery() {
+        guard let url = container.persistentStoreDescriptions.first?.url else { return }
+        
+        // Remove the existing store
+        do {
+            try container.persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
+            
+            // Try to load a fresh store
+            container.loadPersistentStores { description, error in
+                if let error = error {
+                    print("Fatal Error: Failed to recover persistent store: \(error)")
+                    fatalError("Failed to recover persistent store: \(error)")
+                }
+            }
+        } catch {
+            print("Fatal Error: Failed to destroy persistent store: \(error)")
+            fatalError("Failed to destroy persistent store: \(error)")
+        }
+    }
+    
+    // Add a method to reset the store (useful for development)
+    #if DEBUG
+    func resetStore() throws {
+        guard let url = container.persistentStoreDescriptions.first?.url else { return }
+        try container.persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
+        try container.persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+    }
+    #endif
     
     // MARK: - Backup Management
     

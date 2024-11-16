@@ -2,6 +2,12 @@ import Foundation
 import Combine
 import CoreData
 
+enum TaskViewState {
+    case active
+    case completed
+    case backlog
+}
+
 class ImpulsoViewModel: ObservableObject {
     enum SortPreference: String, CaseIterable {
         case manual = "Manual"
@@ -15,12 +21,18 @@ class ImpulsoViewModel: ObservableObject {
     @Published var draggedTask: ImpulsoTask?
     @Published var draggedToIndex: Int?
     @Published var sortPreference: SortPreference = .manual
+    @Published var currentViewState: TaskViewState = .active
     
     // OUTPUTS
     @Published private(set) var tasks: [ImpulsoTask] = []
     @Published private(set) var focusedTask: ImpulsoTask?
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var error: Error?
+    @Published private(set) var completedTasks: [ImpulsoTask] = []
+    @Published private(set) var backlogTasks: [ImpulsoTask] = []
+    
+    // Add this debug property
+    @Published var lastError: String?
     
     // MARK: - Dependencies
     
@@ -47,9 +59,11 @@ class ImpulsoViewModel: ObservableObject {
         let context = persistenceController.container.viewContext
         let task = ImpulsoTask(context: context)
         task.id = UUID()
-        task.description = description
+        task.taskDescription = description
         task.createdAt = Date()
         task.order = Int32(tasks.count)
+        task.isBacklogged = false
+        task.isFocused = false
         
         // Add initial metrics
         task.metrics = TaskMetrics(
@@ -62,9 +76,10 @@ class ImpulsoViewModel: ObservableObject {
         
         do {
             try context.save()
+            print("Task saved successfully: \(description)")
             fetchTasks()
-            newTaskDescription = ""
         } catch {
+            print("Error saving task: \(error)")
             self.error = error
         }
     }
@@ -156,6 +171,30 @@ class ImpulsoViewModel: ObservableObject {
         }
     }
     
+    func moveToBacklog(_ task: ImpulsoTask) {
+        let context = persistenceController.container.viewContext
+        task.isBacklogged = true
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
+    func restoreFromBacklog(_ task: ImpulsoTask) {
+        let context = persistenceController.container.viewContext
+        task.isBacklogged = false
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
     // MARK: - Private Implementation
     
     private func setupSubscriptions() {
@@ -184,28 +223,32 @@ class ImpulsoViewModel: ObservableObject {
     }
     
     private func fetchTasks() {
+        print("Fetching tasks...")
         isLoading = true
         
         let fetchRequest: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "completedAt == NULL")
         
-        // Determine sort descriptors based on preference
-        switch sortPreference {
-        case .manual:
-            fetchRequest.sortDescriptors = [
-                NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)
-            ]
-        case .priority:
-            fetchRequest.sortDescriptors = [
-                NSSortDescriptor(keyPath: \ImpulsoTask.isFocused, ascending: false),
-                NSSortDescriptor(keyPath: \ImpulsoTask.priorityScore, ascending: false)
-            ]
+        // Set predicate based on current view state
+        switch currentViewState {
+        case .active:
+            fetchRequest.predicate = NSPredicate(format: "completedAt == NULL AND isBacklogged == false")
+        case .completed:
+            fetchRequest.predicate = NSPredicate(format: "completedAt != NULL")
+        case .backlog:
+            fetchRequest.predicate = NSPredicate(format: "isBacklogged == true")
         }
+        
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)]
         
         do {
             tasks = try persistenceController.container.viewContext.fetch(fetchRequest)
+            print("Fetched \(tasks.count) tasks")
+            tasks.forEach { task in
+                print("Task: \(task.taskDescription ?? "nil")")
+            }
             isLoading = false
         } catch {
+            print("Error fetching tasks: \(error)")
             self.error = error
             isLoading = false
         }

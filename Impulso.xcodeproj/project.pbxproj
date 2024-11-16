@@ -10,22 +10,9 @@
 		C8FFB5792CE83C77004D5A99 /* Impulso.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Impulso.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C837FC0E2CE8E8C4005A853F /* Exceptions for "Impulso" folder in "Impulso" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Configuration/Impulso.xcdatamodeld,
-			);
-			target = C87097212CE2C17900FD7444 /* Impulso */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C87097232CE2C17900FD7444 /* Impulso */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C837FC0E2CE8E8C4005A853F /* Exceptions for "Impulso" folder in "Impulso" target */,
-			);
 			path = Impulso;
 			sourceTree = "<group>";
 		};
