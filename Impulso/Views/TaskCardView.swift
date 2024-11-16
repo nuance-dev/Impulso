@@ -33,12 +33,11 @@ struct TaskCardView: View {
             // Right Side Controls
             HStack(spacing: 8) {
                 if let metrics = task.metrics {
-                    MetricDots(metrics: metrics) { type, value in
+                    MetricDots(metrics: metrics, onUpdate: { type, value in
                         var updatedMetrics = metrics
                         updatedMetrics.update(type: type, value: value)
                         onMetricUpdate(updatedMetrics)
-                    }
-                    .opacity(isHovered ? 1 : 0.8)
+                    }, isHovered: $isHovered)
                 }
                 
                 FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)

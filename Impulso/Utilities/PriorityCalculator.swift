@@ -46,6 +46,16 @@ struct PriorityCalculator: PriorityCalculating {
                          weightedFun +
                          weightedEffort) * 100
         
+        #if DEBUG
+        print("Priority Calculation:")
+        print("Impact (\(metrics.impact)): \(impactScore) * \(weights["impact"]!) = \(weightedImpact)")
+        print("Momentum (\(metrics.momentum)): \(momentumScore) * \(weights["momentum"]!) = \(weightedMomentum)")
+        print("Alignment (\(metrics.alignment)): \(alignmentScore) * \(weights["alignment"]!) = \(weightedAlignment)")
+        print("Fun (\(metrics.fun)): \(funScore) * \(weights["fun"]!) = \(weightedFun)")
+        print("Effort (\(metrics.effort)): \(effortScore) * \(weights["effort"]!) = \(weightedEffort)")
+        print("Total Score: \(totalScore)")
+        #endif
+        
         // Round to one decimal place and ensure bounds
         return min(max(round(totalScore * 10) / 10, 0), 100)
     }
@@ -54,23 +64,27 @@ struct PriorityCalculator: PriorityCalculating {
     
     private func normalizeMetricValue(_ value: TaskMetrics.MetricValue) -> Double {
         switch value {
+        case .unset:
+            return 0.0
+        case .low:
+            return 0.33
+        case .medium:
+            return 0.66
         case .high:
             return 1.0
-        case .medium:
-            return 0.5
-        case .low:
-            return 0.0
         }
     }
     
     private func normalizeInvertedMetricValue(_ value: TaskMetrics.MetricValue) -> Double {
         switch value {
+        case .unset:
+            return 1.0
+        case .low:
+            return 0.66
+        case .medium:
+            return 0.33
         case .high:
             return 0.0
-        case .medium:
-            return 0.5
-        case .low:
-            return 1.0
         }
     }
 }

@@ -12,15 +12,26 @@ public struct TaskMetrics: Codable, Equatable {
     var effort: MetricValue
     
     public enum MetricValue: Int, Codable, CaseIterable {
+        case unset = 0
         case low = 1
         case medium = 2
         case high = 3
         
         var description: String {
             switch self {
+            case .unset: return "Not Set"
             case .low: return "Low"
             case .medium: return "Medium"
             case .high: return "High"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .unset: return .secondary.opacity(0.5)
+            case .low: return .yellow
+            case .medium: return .orange
+            case .high: return .red
             }
         }
     }

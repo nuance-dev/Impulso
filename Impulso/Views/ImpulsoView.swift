@@ -27,6 +27,22 @@ struct ImpulsoView: View {
                                     hoveredTaskId = isHovered ? task.id : nil
                                 }
                             }
+                            .makeDraggable(task: task, draggedTask: .init(
+                                get: { viewModel.draggedTask },
+                                set: { viewModel.draggedTask = $0 }
+                            ))
+                            .makeDropArea(
+                                draggedTask: .init(
+                                    get: { viewModel.draggedTask },
+                                    set: { viewModel.draggedTask = $0 }
+                                ),
+                                tasks: viewModel.tasks
+                            ) { updatedTasks in
+                                if let sourceIndex = updatedTasks.firstIndex(where: { $0.id == task.id }),
+                                   let targetIndex = viewModel.tasks.firstIndex(where: { $0.id == task.id }) {
+                                    viewModel.reorderTasks(from: IndexSet(integer: sourceIndex), to: targetIndex)
+                                }
+                            }
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }

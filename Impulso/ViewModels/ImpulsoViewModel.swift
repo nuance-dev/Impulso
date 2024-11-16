@@ -47,11 +47,11 @@ class ImpulsoViewModel: ObservableObject {
         
         // Add initial metrics
         task.metrics = TaskMetrics(
-            impact: .medium,
-            fun: .medium,
-            momentum: .medium,
-            alignment: .medium,
-            effort: .medium
+            impact: .unset,
+            fun: .unset,
+            momentum: .unset,
+            alignment: .unset,
+            effort: .unset
         )
         
         do {
@@ -67,6 +67,9 @@ class ImpulsoViewModel: ObservableObject {
     func updateTaskMetrics(_ task: ImpulsoTask, metrics: TaskMetrics) {
         let context = persistenceController.container.viewContext
         task.metrics = metrics
+        
+        // Calculate and update priority score
+        calculatePriority(for: task)
         
         do {
             try context.save()
