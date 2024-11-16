@@ -40,13 +40,9 @@ struct MetricDot: View {
             showPopover.toggle()
         }) {
             Image(systemName: type.iconName)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(value == .unset ? .secondary.opacity(0.5) : value.color)
+                .font(.system(size: 11, weight: .light))
+                .foregroundColor(value == .unset ? .secondary.opacity(0.3) : value.color.opacity(0.8))
                 .frame(width: 20, height: 20)
-                .background(
-                    Circle()
-                        .fill(value == .unset ? Color.clear : value.color.opacity(0.1))
-                )
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showPopover, arrowEdge: .bottom) {

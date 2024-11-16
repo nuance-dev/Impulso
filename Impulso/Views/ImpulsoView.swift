@@ -9,6 +9,12 @@ struct ImpulsoView: View {
             if viewModel.tasks.isEmpty {
                 emptyStateView
             } else {
+                HStack {
+                    Spacer()
+                    SortToggle(sortPreference: $viewModel.sortPreference)
+                }
+                .padding(.horizontal)
+                
                 ScrollView {
                     LazyVStack(spacing: 6) {
                         ForEach(viewModel.tasks) { task in
@@ -74,5 +80,39 @@ struct ImpulsoView: View {
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct SortToggle: View {
+    @Binding var sortPreference: ImpulsoViewModel.SortPreference
+    
+    var body: some View {
+        Menu {
+            ForEach(ImpulsoViewModel.SortPreference.allCases, id: \.self) { preference in
+                Button(action: {
+                    sortPreference = preference
+                }) {
+                    HStack {
+                        Text(preference.rawValue)
+                        if sortPreference == preference {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10))
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 10, weight: .light))
+                Text(sortPreference.rawValue)
+                    .font(.system(size: 11))
+            }
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(4)
+        }
     }
 }

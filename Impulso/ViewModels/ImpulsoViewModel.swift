@@ -3,12 +3,18 @@ import Combine
 import CoreData
 
 class ImpulsoViewModel: ObservableObject {
+    enum SortPreference: String, CaseIterable {
+        case manual = "Manual"
+        case priority = "Priority"
+    }
+    
     // MARK: - Published Properties
     
     // INPUTS
     @Published var newTaskDescription: String = ""
     @Published var draggedTask: ImpulsoTask?
     @Published var draggedToIndex: Int?
+    @Published var sortPreference: SortPreference = .manual
     
     // OUTPUTS
     @Published private(set) var tasks: [ImpulsoTask] = []
@@ -181,10 +187,20 @@ class ImpulsoViewModel: ObservableObject {
         isLoading = true
         
         let fetchRequest: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
-        fetchRequest.sortDescriptors = [
-            NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)
-        ]
         fetchRequest.predicate = NSPredicate(format: "completedAt == NULL")
+        
+        // Determine sort descriptors based on preference
+        switch sortPreference {
+        case .manual:
+            fetchRequest.sortDescriptors = [
+                NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)
+            ]
+        case .priority:
+            fetchRequest.sortDescriptors = [
+                NSSortDescriptor(keyPath: \ImpulsoTask.isFocused, ascending: false),
+                NSSortDescriptor(keyPath: \ImpulsoTask.priorityScore, ascending: false)
+            ]
+        }
         
         do {
             tasks = try persistenceController.container.viewContext.fetch(fetchRequest)
