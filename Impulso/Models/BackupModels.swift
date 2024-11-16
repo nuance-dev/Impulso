@@ -77,9 +77,9 @@ struct TaskData: Codable, Identifiable, Equatable {
     let priorityScore: Double
     
     init(from task: ImpulsoTask) {
-        self.id = task.id
+        self.id = task.id!
         self.description = task.description
-        self.createdAt = task.createdAt
+        self.createdAt = task.createdAt!
         self.completedAt = task.completedAt
         self.order = task.order
         self.isFocused = task.isFocused

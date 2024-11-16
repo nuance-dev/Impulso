@@ -67,7 +67,7 @@ public struct TaskMetrics: Codable, Equatable {
 // MARK: - ImpulsoTask Extensions
 extension ImpulsoTask {
     override public var description: String {
-        get { taskDescription }
+        get { taskDescription ?? "" }
         set { taskDescription = newValue }
     }
     
@@ -84,10 +84,7 @@ extension ImpulsoTask {
 
 // MARK: - Fetch Request Helpers
 extension ImpulsoTask {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<ImpulsoTask> {
-        return NSFetchRequest<ImpulsoTask>(entityName: "ImpulsoTask")
-    }
-    
+   
     static var allTasksFetchRequest: NSFetchRequest<ImpulsoTask> {
         let request: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
         request.sortDescriptors = [
@@ -170,9 +167,4 @@ extension ImpulsoTask {
     var isCompleted: Bool {
         completedAt != nil
     }
-}
-
-extension ImpulsoTask: Identifiable {
-    // No implementation needed since we already have an `id` property
-    // that matches the requirements of Identifiable
 }

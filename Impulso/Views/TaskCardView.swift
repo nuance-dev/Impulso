@@ -17,7 +17,7 @@ struct TaskCardView: View {
             
             // Task Details
             VStack(alignment: .leading, spacing: 3) {
-                Text(task.taskDescription)
+                Text(task.taskDescription!)
                     .font(.system(size: 13))
                     .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
                     .strikethrough(task.isCompleted)
