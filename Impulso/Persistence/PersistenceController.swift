@@ -78,9 +78,18 @@ class PersistenceController {
     }
     
     func restoreFromBackup(at url: URL) async throws {
-        // Verify backup file exists
+        // Verify backup file exists and is valid
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw BackupError.fileNotFound
+        }
+        
+        // Validate backup file
+        guard let _ = try? NSPersistentStoreCoordinator.metadataForPersistentStore(
+            ofType: NSSQLiteStoreType,
+            at: url,
+            options: nil
+        ) else {
+            throw BackupError.invalidBackup
         }
         
         // Save any pending changes

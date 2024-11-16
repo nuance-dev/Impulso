@@ -31,7 +31,7 @@ class MenuBarController: NSObject, ObservableObject {
             
             // Update the button image when the status changes
             updater.onStatusChange = { [weak self] newIcon in
-                guard self != nil else { return }
+                guard let self = self else { return }
                 DispatchQueue.main.async {
                     button.image = NSImage(systemSymbolName: newIcon, accessibilityDescription: "Update Status")
                 }

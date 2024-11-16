@@ -38,7 +38,7 @@ struct TaskInputField: View {
     private func submit() {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        onSubmit(trimmed)
         text = ""
+        onSubmit(trimmed)
     }
 }

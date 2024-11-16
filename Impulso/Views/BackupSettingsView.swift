@@ -10,6 +10,8 @@ struct BackupSettingsView: View {
     @State private var selectedBackup: BackupRecord?
     @State private var showingRestoreAlert = false
     @Environment(\.dismiss) private var dismiss
+    @State private var backupError: String?
+    @State private var showingErrorAlert = false
     
     init(backupManager: BackupManager) {
         self.backupManager = backupManager
@@ -49,6 +51,11 @@ struct BackupSettingsView: View {
             restoreAlertButtons
         } message: {
             Text("Are you sure you want to restore this backup? Current data will be replaced.")
+        }
+        .alert("Backup Failed", isPresented: $showingErrorAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(backupError ?? "Unknown error occurred")
         }
     }
     
@@ -175,7 +182,10 @@ struct BackupSettingsView: View {
             do {
                 try await backupManager.performManualBackup()
             } catch {
-                print("Manual backup failed: \(error)")
+                await MainActor.run {
+                    backupError = error.localizedDescription
+                    showingErrorAlert = true
+                }
             }
         }
     }

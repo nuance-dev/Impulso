@@ -133,10 +133,15 @@ private struct TaskDropDelegate: DropDelegate {
     
     // Helper to determine if a location is within a task's bounds
     private func isLocation(_ location: CGPoint, inTaskBounds index: Int) -> Bool {
-        // This is a simplified implementation. In a real app, you would want to
-        // calculate actual task view frames and check against those.
-        let taskHeight: CGFloat = 80 // Approximate height of a task card
-        let yPosition = CGFloat(index) * taskHeight
-        return location.y >= yPosition && location.y <= yPosition + taskHeight
+        let taskHeight: CGFloat = 44 // Standard row height
+        let spacing: CGFloat = 6 // Matches spacing in ImpulsoView
+        let verticalPadding: CGFloat = 8 // Matches TaskCardView padding
+        
+        let totalItemHeight = taskHeight + spacing + (verticalPadding * 2)
+        let yPosition = CGFloat(index) * totalItemHeight
+        
+        // Add buffer zone for better drop targeting
+        let buffer: CGFloat = spacing / 2
+        return location.y >= (yPosition - buffer) && location.y <= (yPosition + totalItemHeight + buffer)
     }
 }

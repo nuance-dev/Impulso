@@ -48,6 +48,12 @@ public struct TaskMetrics: Codable, Equatable {
     }
     
     mutating func update(type: MetricType, value: MetricValue) {
+        // Validate input value
+        guard MetricValue.allCases.contains(value) else {
+            print("Warning: Invalid metric value provided")
+            return
+        }
+        
         switch type {
         case .impact: impact = value
         case .fun: fun = value
