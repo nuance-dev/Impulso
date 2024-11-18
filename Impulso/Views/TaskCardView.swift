@@ -15,138 +15,144 @@ struct TaskCardView: View {
     @State private var showingNotesEditor = false
     @State private var editingNotes: String = ""
     @State private var showingDetailView = false
+    @State private var expandedHeight: CGFloat = 0
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Main task row
-            HStack(spacing: 12) {
-                CompletionIndicator(isCompleted: task.isCompleted, onComplete: onComplete)
-                    .padding(.leading, 20)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(task.taskDescription!)
-                            .font(.system(size: 14))
-                            .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
-                            .strikethrough(task.isCompleted)
-                        
-                        if task.priorityScore > 0 {
-                            PriorityBadge(score: task.priorityScore)
-                        }
-                        
-                        if task.taskNotes != nil {
-                            Image(systemName: "text.alignleft")
-                                .font(.system(size: 12))
-                                .foregroundColor(.secondary)
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        isExpanded.toggle()
-                                    }
-                                }
-                        }
-                    }
-                }
-                
-                Spacer()
-                
+        GeometryReader { geometry in
+            VStack(alignment: .leading, spacing: 0) {
+                // Main task row
                 HStack(spacing: 12) {
-                    if let metrics = task.metrics {
-                        MetricDots(metrics: metrics, onUpdate: { type, value in
-                            var updatedMetrics = metrics
-                            updatedMetrics.update(type: type, value: value)
-                            onMetricUpdate(updatedMetrics)
-                        }, isHovered: $isHovered)
+                    CompletionIndicator(isCompleted: task.isCompleted, onComplete: onComplete)
+                        .padding(.leading, 20)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Text(task.taskDescription!)
+                                .font(.system(size: 14))
+                                .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
+                                .strikethrough(task.isCompleted)
+                            
+                            if task.priorityScore > 0 {
+                                PriorityBadge(score: task.priorityScore)
+                            }
+                            
+                            if task.taskNotes != nil {
+                                Image(systemName: "text.alignleft")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                                    .onTapGesture {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            isExpanded.toggle()
+                                        }
+                                    }
+                            }
+                        }
                     }
                     
-                    FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)
-                        .padding(.trailing, 20)
-                }
-            }
-            .frame(height: 44)
-            
-            // Description section
-            if isExpanded, let notes = task.taskNotes {
-                Text(notes)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 48)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                    .onTapGesture(count: 2) {
-                        editingNotes = notes
-                        showingNotesEditor = true
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        if let metrics = task.metrics {
+                            MetricDots(metrics: metrics, onUpdate: { type, value in
+                                var updatedMetrics = metrics
+                                updatedMetrics.update(type: type, value: value)
+                                onMetricUpdate(updatedMetrics)
+                            }, isHovered: $isHovered)
+                        }
+                        
+                        FocusIndicator(isFocused: task.isFocused, onToggle: onFocusToggle)
+                            .padding(.trailing, 20)
                     }
-            }
-        }
-        .background(
-            Group {
-                if task.isFocused {
-                    Color.yellow.opacity(0.05)
-                } else if isHovered {
-                    Color(NSColor.selectedContentBackgroundColor).opacity(0.05)
-                } else {
-                    Color.clear
+                }
+                .frame(height: 44)
+                
+                // Description section
+                if isExpanded, let notes = task.taskNotes {
+                    Text(notes)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 48)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture(count: 2) {
+                            editingNotes = notes
+                            showingNotesEditor = true
+                        }
                 }
             }
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(
-                    task.isFocused ? 
-                        Color.yellow.opacity(0.4) : 
-                        Color.primary.opacity(colorScheme == .dark ? 0.15 : 0.08),
-                    lineWidth: task.isFocused ? 1.5 : 1
-                )
-        )
-        .contextMenu {
-            if !task.isBacklogged {
-                Button(action: onMoveToBacklog) {
-                    Label("Move to Backlog", systemImage: "archivebox")
-                }
-            }
-            Button(action: onFocusToggle) {
-                Label(task.isFocused ? "Remove Focus" : "Focus Task", 
-                      systemImage: task.isFocused ? "star.slash" : "star")
-            }
-            Divider()
-            Button(action: {
-                editingNotes = task.taskNotes ?? ""
-                showingNotesEditor = true
-            }) {
-                Label(task.taskNotes == nil ? "Add Notes" : "Edit Notes", 
-                      systemImage: "text.alignleft")
-            }
-            Divider()
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete Task", systemImage: "trash")
-            }
-        }
-        .sheet(isPresented: $showingNotesEditor) {
-            TaskNotesEditor(notes: $editingNotes) { updatedNotes in
-                onNotesUpdate(updatedNotes)
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            showingDetailView = true
-        }
-        .sheet(isPresented: $showingDetailView) {
-            TaskDetailView(
-                task: task,
-                onMetricUpdate: onMetricUpdate,
-                onNotesUpdate: onNotesUpdate,
-                onDelete: {
-                    showingDetailView = false
-                    onDelete()
+            .background(
+                Group {
+                    if task.isFocused {
+                        Color.yellow.opacity(0.05)
+                    } else if isHovered {
+                        Color(NSColor.selectedContentBackgroundColor).opacity(0.05)
+                    } else {
+                        Color.clear
+                    }
                 }
             )
-            .frame(width: 520, height: 600)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        task.isFocused ? 
+                            Color.yellow.opacity(0.4) : 
+                            Color.primary.opacity(colorScheme == .dark ? 0.15 : 0.08),
+                        lineWidth: task.isFocused ? 1.5 : 1
+                    )
+            )
+            .contextMenu {
+                if !task.isBacklogged {
+                    Button(action: onMoveToBacklog) {
+                        Label("Move to Backlog", systemImage: "archivebox")
+                    }
+                }
+                Button(action: onFocusToggle) {
+                    Label(task.isFocused ? "Remove Focus" : "Focus Task", 
+                          systemImage: task.isFocused ? "star.slash" : "star")
+                }
+                Divider()
+                Button(action: {
+                    editingNotes = task.taskNotes ?? ""
+                    showingNotesEditor = true
+                }) {
+                    Label(task.taskNotes == nil ? "Add Notes" : "Edit Notes", 
+                          systemImage: "text.alignleft")
+                }
+                Divider()
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete Task", systemImage: "trash")
+                }
+            }
+            .sheet(isPresented: $showingNotesEditor) {
+                TaskNotesEditor(notes: $editingNotes) { updatedNotes in
+                    onNotesUpdate(updatedNotes)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                showingDetailView = true
+            }
+            .sheet(isPresented: $showingDetailView) {
+                TaskDetailView(
+                    task: task,
+                    onMetricUpdate: onMetricUpdate,
+                    onNotesUpdate: onNotesUpdate,
+                    onDelete: {
+                        showingDetailView = false
+                        onDelete()
+                    }
+                )
+                .frame(width: 520, height: 600)
+            }
+            .onChange(of: isExpanded) { newValue in
+                withAnimation(.spring(response: 0.3)) {
+                    expandedHeight = newValue ? geometry.size.height - 44 : 0
+                }
+            }
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .contentShape(Rectangle())
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isExpanded)
     }
 }
 

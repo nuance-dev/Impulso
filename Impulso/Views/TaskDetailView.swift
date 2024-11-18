@@ -30,8 +30,14 @@ struct TaskDetailView: View {
             // Minimal header with subtle actions
             HStack(spacing: 16) {
                 TextField("Task description", text: $editingDescription)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 16))
                     .textFieldStyle(.plain)
+                    .onAppear {
+                        // Delay to prevent automatic selection
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            NSApp.keyWindow?.makeFirstResponder(nil)
+                        }
+                    }
                 
                 Spacer()
                 

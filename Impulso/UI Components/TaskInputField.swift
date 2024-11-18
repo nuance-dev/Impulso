@@ -31,7 +31,6 @@ struct TaskInputField: View {
         .onTapGesture {
             isFocused = true
         }
-        .keyboardShortcut("n", modifiers: .command)
     }
     
     private func submit() {

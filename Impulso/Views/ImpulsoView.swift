@@ -4,6 +4,20 @@ struct ImpulsoView: View {
     @ObservedObject var viewModel: ImpulsoViewModel
     @State private var showingCommandMenu = false
     @State private var hoveredTaskId: UUID?
+    @FocusState private var isInputFieldFocused: Bool
+    
+    // Add this to handle keyboard shortcuts
+    class KeyboardShortcuts {
+        static func setup(action: @escaping () -> Void) -> Any {
+            NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+                if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "n" {
+                    action()
+                    return nil
+                }
+                return event
+            }
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -66,6 +80,7 @@ struct ImpulsoView: View {
             
             // Add TaskInputField here
             TaskInputField(onSubmit: viewModel.addTask)
+                .focused($isInputFieldFocused)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
             
@@ -106,9 +121,10 @@ struct ImpulsoView: View {
         .background(
             VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow)
         )
-        .keyboardShortcut("n", modifiers: .command)
-        .onTapGesture {
-            showingCommandMenu = false
+        .onAppear {
+            _ = KeyboardShortcuts.setup {
+                isInputFieldFocused = true
+            }
         }
     }
     

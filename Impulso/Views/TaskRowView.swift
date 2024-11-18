@@ -37,7 +37,7 @@ struct TaskRowView: View {
         .onHover { isHovered in
             hoveredTaskId = isHovered ? task.id : nil
         }
-        .frame(height: taskCardHeight)
+        .frame(minHeight: taskCardHeight)
         .padding(.horizontal)
         .opacity(viewModel.draggedTask?.id == task.id ? 0 : 1)
         .animation(.easeInOut(duration: 0.2), value: viewModel.draggedTask?.id)
