@@ -1,34 +1,51 @@
-# Figura - A Free MacOS (14+) Native Background Remover
+# Impulso - A Native MacOS Task Management App
 
-![image](https://github.com/user-attachments/assets/dc2dc142-ef86-4655-9034-2cb1e52db842)
+![App Icon](assets/app-icon.png)
 
+A sleek, native macOS app for managing tasks with intelligent priority scoring and flexible organization options. Built with SwiftUI for optimal performance and a modern user experience.
 
-A sleek, free native macOS app that removes backgrounds from images with a minimal interface and modern design. It's fast!
-
-Note: This app wraps macOS's own native background removing functionality, and it requires macOS version 14+
+Note: This app requires macOS version 14.5+
 
 ## Features
-- **One-Click Background Removal**: Instantly remove backgrounds from any image
-- **Multiple Input Methods**: Drag & drop, paste (⌘V), or click to upload
-- **Native Performance**: Built with SwiftUI and Vision framework for optimal processing
+
+- **Smart Priority Scoring**: Automatically calculates task priority based on multiple metrics
+- **Multiple Views**: Organize tasks between Active, Completed, and Backlog states
+- **Task Metrics**: Score tasks based on Impact, Fun, Momentum, Alignment, and Effort
+- **Keyboard Shortcuts**: Quick access with ⌘K command palette and other shortcuts
 - **Dark and Light modes**: Because we care about your eyes
-  
+- **Automatic Backups**: Configurable backup frequency to keep your data safe
+- **Data Import/Export**: Easy data portability with JSON import/export options
 
-https://github.com/user-attachments/assets/2599e483-8a5e-4147-8a81-c647a6e9f1cb
+## Task Management
 
+- Focus important tasks
+- Drag and drop reordering
+- Move tasks to backlog
+- Mark tasks as complete
+- Context menu actions
+- Priority badges
 
+## Backup Features
 
-## 💻 Get it
+- Configurable automatic backups (Daily/Weekly/Monthly)
+- Manual backup creation
+- Backup restoration
+- Export/Import functionality
+- Backup history management
 
-Download from the [releases](https://github.com/nuance-dev/Figura/releases/) page.
+## 💻 Installation
 
-## 🥑 Fun facts?
-- v1 was made with Claude Sonnet 3.5 in under 4 hours
-- Yes, I love cats
+Download from the [releases](https://github.com/your-repo/Impulso/releases/) page.
 
-![Screenshot 2024-10-25 at 1 11 45 AM](https://github.com/user-attachments/assets/7d90b952-8049-4036-8761-285df0164985)
+## ⌨️ Keyboard Shortcuts
+
+- `⌘K`: Open command palette
+- `⌘N`: Create new task
+- `⌘B`: Create backup
+- `⌘U`: Check for updates
 
 ## 🤝 Contributing
+
 We welcome contributions! Here's how you can help:
 
 1. Fork the repository
@@ -37,14 +54,10 @@ We welcome contributions! Here's how you can help:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-Please ensure your PR:
-- Follows the existing code style
-- Includes appropriate tests
-- Updates documentation as needed
-
 ## 📝 License
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Links
-- Report issues: [GitHub Issues](https://github.com/nuance-dev/Figura/issues)
-- Follow updates: [@Nuanced](https://twitter.com/Nuancedev)
+
+- Report issues: [GitHub Issues](https://github.com/your-repo/Impulso/issues)

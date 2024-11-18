@@ -140,6 +140,7 @@ class ImpulsoViewModel: ObservableObject {
     
     /// Reorders tasks based on drag and drop operation
     func reorderTasks(from source: IndexSet, to destination: Int) {
+        let context = persistenceController.container.viewContext
         var updatedTasks = tasks
         updatedTasks.move(fromOffsets: source, toOffset: destination)
         
@@ -149,7 +150,7 @@ class ImpulsoViewModel: ObservableObject {
         }
         
         do {
-            try persistenceController.container.viewContext.save()
+            try context.save()
             fetchTasks()
         } catch {
             self.error = error

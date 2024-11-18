@@ -33,23 +33,50 @@ struct TaskRowView: View {
         }
         .frame(height: taskCardHeight)
         .padding(.horizontal)
-        .makeDraggable(task: task, draggedTask: Binding(
-            get: { viewModel.draggedTask },
-            set: { viewModel.draggedTask = $0 }
+        .opacity(viewModel.draggedTask?.id == task.id ? 0 : 1)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.draggedTask?.id)
+        .onDrag {
+            viewModel.draggedTask = task
+            return NSItemProvider(object: task.id!.uuidString as NSString)
+        }
+        .onDrop(of: [.text], delegate: TaskDropDelegate(
+            task: task,
+            viewModel: viewModel
         ))
-        .makeDropArea(
-            draggedTask: Binding(
-                get: { viewModel.draggedTask },
-                set: { viewModel.draggedTask = $0 }
-            ),
-            tasks: viewModel.tasks,
-            onReorder: { tasks in
-                guard let sourceIndex = tasks.firstIndex(of: task),
-                      let targetIndex = tasks.firstIndex(where: { $0.id == task.id }) else {
-                    return
-                }
-                viewModel.reorderTasks(from: IndexSet(integer: sourceIndex), to: targetIndex)
+    }
+}
+
+private struct TaskDropDelegate: DropDelegate {
+    let task: ImpulsoTask
+    let viewModel: ImpulsoViewModel
+    
+    func performDrop(info: DropInfo) -> Bool {
+        guard let draggedTask = viewModel.draggedTask,
+              let fromIndex = viewModel.tasks.firstIndex(where: { $0.id == draggedTask.id }),
+              let toIndex = viewModel.tasks.firstIndex(where: { $0.id == task.id }) else {
+            return false
+        }
+        
+        viewModel.reorderTasks(from: IndexSet(integer: fromIndex), to: toIndex)
+        viewModel.draggedTask = nil
+        return true
+    }
+    
+    func dropEntered(info: DropInfo) {
+        guard let draggedTask = viewModel.draggedTask,
+              draggedTask.id != task.id else { return }
+        
+        let fromIndex = viewModel.tasks.firstIndex(where: { $0.id == draggedTask.id })!
+        let toIndex = viewModel.tasks.firstIndex(where: { $0.id == task.id })!
+        
+        if fromIndex != toIndex {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                viewModel.reorderTasks(from: IndexSet(integer: fromIndex), to: toIndex)
             }
-        )
+        }
+    }
+    
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        return DropProposal(operation: .move)
     }
 }
