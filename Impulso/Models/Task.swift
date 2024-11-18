@@ -160,7 +160,7 @@ public enum MetricType: String, CaseIterable, Identifiable {
     var iconName: String {
         switch self {
         case .impact: return "bolt.fill"
-        case .fun: return "star.fill"
+        case .fun: return "face.smiling.fill"
         case .momentum: return "gauge.medium"
         case .alignment: return "scope"
         case .effort: return "timer"

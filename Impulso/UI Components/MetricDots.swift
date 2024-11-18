@@ -150,7 +150,7 @@ struct MetricPopover: View {
             }
             .padding(.vertical, 4)
         }
-        .frame(width: 200)
+        .frame(width: 300)
         .background(
             ZStack {
                 if colorScheme == .dark {

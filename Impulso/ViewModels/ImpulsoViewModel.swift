@@ -116,7 +116,7 @@ class ImpulsoViewModel: ObservableObject {
         
         do {
             try context.save()
-            updateTaskOrder()
+            fetchTasks()
         } catch {
             self.error = error
         }
@@ -193,7 +193,7 @@ class ImpulsoViewModel: ObservableObject {
         
         do {
             try context.save()
-            updateTaskOrder() // This will handle the reordering
+            fetchTasks()
         } catch {
             self.error = error
         }
