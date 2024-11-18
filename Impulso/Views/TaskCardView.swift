@@ -142,8 +142,11 @@ struct TaskCardView: View {
                     onDelete()
                 }
             )
-            .frame(width: 500, height: 600)
+            .frame(width: 520, height: 600)
         }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .contentShape(Rectangle())
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isExpanded)
     }
 }
 

@@ -74,7 +74,7 @@ struct ImpulsoView: View {
                 emptyStateView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 8) {
+                    LazyVStack(spacing: 8, pinnedViews: []) {
                         ForEach(viewModel.tasks) { task in
                             TaskRowView(
                                 task: task,
@@ -85,6 +85,8 @@ struct ImpulsoView: View {
                             .transition(.opacity)
                         }
                     }
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), 
+                              value: viewModel.tasks)
                     .padding(.vertical, 8)
                 }
             }

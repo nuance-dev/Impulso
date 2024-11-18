@@ -1,96 +1,113 @@
-
 import SwiftUI
 
 struct TaskDetailView: View {
     let task: ImpulsoTask
-    let onMetricUpdate: (TaskMetrics) -> Void
-    let onNotesUpdate: (String) -> Void
-    let onDelete: () -> Void
+    var onMetricUpdate: (TaskMetrics) -> Void
+    var onNotesUpdate: (String) -> Void
+    var onDelete: () -> Void
     
     @Environment(\.dismiss) private var dismiss
-    @State private var editedDescription: String
-    @State private var editedNotes: String
-    @State private var showingDeleteAlert = false
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var editingDescription: String
+    @State private var editingNotes: String
+    @State private var showingDeleteConfirm = false
+    @FocusState private var isEditingNotes: Bool
     
-    init(task: ImpulsoTask, onMetricUpdate: @escaping (TaskMetrics) -> Void, onNotesUpdate: @escaping (String) -> Void, onDelete: @escaping () -> Void) {
+    init(task: ImpulsoTask, 
+         onMetricUpdate: @escaping (TaskMetrics) -> Void,
+         onNotesUpdate: @escaping (String) -> Void,
+         onDelete: @escaping () -> Void) {
         self.task = task
         self.onMetricUpdate = onMetricUpdate
         self.onNotesUpdate = onNotesUpdate
         self.onDelete = onDelete
-        _editedDescription = State(initialValue: task.taskDescription ?? "")
-        _editedNotes = State(initialValue: task.taskNotes ?? "")
+        self._editingDescription = State(initialValue: task.taskDescription ?? "")
+        self._editingNotes = State(initialValue: task.taskNotes ?? "")
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
+            // Minimal header with subtle actions
+            HStack(spacing: 16) {
+                TextField("Task description", text: $editingDescription)
+                    .font(.system(size: 16, weight: .medium))
+                    .textFieldStyle(.plain)
                 
                 Spacer()
                 
-                Button(role: .destructive, action: { showingDeleteAlert = true }) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
+                HStack(spacing: 20) {
+                    Button(action: { showingDeleteConfirm = true }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary.opacity(0.8))
+                    
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary.opacity(0.8))
                 }
             }
-            .padding()
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
+            
+            Divider()
+                .opacity(0.15)
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Title section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Title")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Task description", text: $editedDescription)
-                            .font(.system(size: 16))
-                            .textFieldStyle(.plain)
-                            .padding(12)
-                            .background(Color(NSColor.controlBackgroundColor))
-                            .cornerRadius(6)
-                            .onChange(of: editedDescription) { _, newValue in
-                                onNotesUpdate(newValue)
-                            }
-                    }
-                    
-                    // Metrics section
+                VStack(alignment: .leading, spacing: 32) {
+                    // Metrics section with refined cards
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Metrics")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
+                        Text("METRICS")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.8))
+                            .padding(.horizontal, 2)
                         
-                        ForEach(MetricType.allCases) { type in
-                            MetricRow(
-                                type: type,
-                                value: task.metrics?.value(for: type) ?? .unset,
-                                onChange: { newValue in
-                                    var updatedMetrics = task.metrics ?? TaskMetrics()
-                                    updatedMetrics.update(type: type, value: newValue)
-                                    onMetricUpdate(updatedMetrics)
-                                }
-                            )
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: 12) {
+                            ForEach(MetricType.allCases) { type in
+                                MetricCard(
+                                    type: type,
+                                    value: task.metrics?.value(for: type) ?? .unset,
+                                    onChange: { value in
+                                        var updatedMetrics = task.metrics ?? TaskMetrics()
+                                        updatedMetrics.update(type: type, value: value)
+                                        onMetricUpdate(updatedMetrics)
+                                    }
+                                )
+                            }
                         }
                     }
                     
-                    // Notes section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Notes")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
+                    // Notes section with minimal styling
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("NOTES")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.8))
+                            .padding(.horizontal, 2)
                         
-                        TextEditor(text: $editedNotes)
-                            .font(.system(size: 14))
-                            .frame(minHeight: 100)
-                            .padding(8)
-                            .background(Color(NSColor.controlBackgroundColor))
-                            .cornerRadius(6)
-                            .onChange(of: editedNotes) { _, newValue in
+                        TextEditor(text: $editingNotes)
+                            .font(.system(size: 13))
+                            .focused($isEditingNotes)
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: 120)
+                            .padding(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color(NSColor.textBackgroundColor).opacity(0.3))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.primary.opacity(colorScheme == .dark ? 0.1 : 0.05), 
+                                           lineWidth: 0.5)
+                            )
+                            .onChange(of: editingNotes) { _, newValue in
                                 onNotesUpdate(newValue)
                             }
                     }
@@ -98,49 +115,83 @@ struct TaskDetailView: View {
                 .padding(24)
             }
         }
-        .background(VisualEffectBlur(material: .popover, blendingMode: .behindWindow))
-        .alert("Delete Task", isPresented: $showingDeleteAlert) {
+        .background(VisualEffectBlur(material: .popover, blendingMode: .withinWindow))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.04), lineWidth: 1)
+        )
+        .alert("Delete Task", isPresented: $showingDeleteConfirm) {
+            Button("Delete", role: .destructive, action: onDelete)
             Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                onDelete()
-            }
-        } message: {
-            Text("Are you sure you want to delete this task? This action cannot be undone.")
         }
     }
 }
 
-struct MetricRow: View {
+struct MetricCard: View {
     let type: MetricType
     let value: TaskMetrics.MetricValue
     let onChange: (TaskMetrics.MetricValue) -> Void
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var showingPopover = false
     
     var body: some View {
-        HStack {
-            Label(type.title, systemImage: type.iconName)
-                .font(.system(size: 14))
-            
-            Spacer()
-            
-            Menu {
+        Button {
+            showingPopover.toggle()
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    Image(systemName: type.iconName)
+                        .font(.system(size: 12))
+                        .foregroundColor(type.color.opacity(0.8))
+                    Text(type.shortTitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.primary.opacity(0.8))
+                }
+                
+                Text(value.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(value == .unset ? .secondary.opacity(0.7) : .primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.04), 
+                                  lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $showingPopover, arrowEdge: .bottom) {
+            VStack(spacing: 2) {
                 ForEach(TaskMetrics.MetricValue.allCases, id: \.self) { metricValue in
-                    Button(action: { onChange(metricValue) }) {
+                    Button {
+                        onChange(metricValue)
+                        showingPopover = false
+                    } label: {
                         HStack {
                             Text(metricValue.description)
+                                .font(.system(size: 12))
+                            Spacer()
                             if value == metricValue {
                                 Image(systemName: "checkmark")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.blue)
                             }
                         }
+                        .contentShape(Rectangle())
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .frame(width: 120)
                     }
+                    .buttonStyle(.plain)
                 }
-            } label: {
-                Text(value.description)
-                    .font(.system(size: 14))
-                    .foregroundColor(.primary)
             }
+            .padding(.vertical, 4)
+            .background(VisualEffectBlur(material: .popover, blendingMode: .withinWindow))
         }
-        .padding(8)
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(6)
     }
 }
