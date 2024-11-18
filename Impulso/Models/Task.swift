@@ -28,7 +28,7 @@ public struct TaskMetrics: Codable, Equatable {
         
         var color: Color {
             switch self {
-            case .unset: return .secondary.opacity(0.5)
+            case .unset: return .secondary.opacity(0.3)
             case .low: return .yellow
             case .medium: return .orange
             case .high: return .red

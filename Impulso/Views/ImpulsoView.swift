@@ -62,7 +62,7 @@ struct ImpulsoView: View {
                 emptyStateView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 1) {
+                    LazyVStack(spacing: 8) {
                         ForEach(viewModel.tasks) { task in
                             TaskRowView(
                                 task: task,
@@ -70,8 +70,10 @@ struct ImpulsoView: View {
                                 hoveredTaskId: $hoveredTaskId,
                                 viewModel: viewModel
                             )
+                            .transition(.opacity)
                         }
                     }
+                    .padding(.vertical, 8)
                 }
             }
         }

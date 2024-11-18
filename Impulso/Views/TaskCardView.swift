@@ -12,11 +12,9 @@ struct TaskCardView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Completion Indicator
             CompletionIndicator(isCompleted: task.isCompleted, onComplete: onComplete)
                 .padding(.leading, 20)
             
-            // Task Details
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text(task.taskDescription!)
@@ -32,8 +30,7 @@ struct TaskCardView: View {
             
             Spacer()
             
-            // Right Side Controls
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 if let metrics = task.metrics {
                     MetricDots(metrics: metrics, onUpdate: { type, value in
                         var updatedMetrics = metrics
@@ -52,17 +49,21 @@ struct TaskCardView: View {
                 if task.isFocused {
                     Color.yellow.opacity(0.05)
                 } else if isHovered {
-                    Color(NSColor.selectedContentBackgroundColor).opacity(0.1)
+                    Color(NSColor.selectedContentBackgroundColor).opacity(0.05)
                 } else {
                     Color.clear
                 }
             }
         )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             Group {
                 if task.isFocused {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.primary.opacity(0.03), lineWidth: 1)
                 }
             }
         )
