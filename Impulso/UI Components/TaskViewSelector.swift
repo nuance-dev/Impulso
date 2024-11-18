@@ -2,38 +2,44 @@ import SwiftUI
 
 struct TaskViewSelector: View {
     @Binding var selection: TaskViewState
+    let activeTasks: Int
+    let completedTasks: Int
+    let backlogTasks: Int
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 24) {
             ForEach([TaskViewState.active, .completed, .backlog], id: \.self) { state in
-                Button(action: { selection = state }) {
-                    HStack(spacing: 6) {
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selection = state
+                    }
+                }) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(state.title)
-                            .font(.system(size: 13, weight: selection == state ? .medium : .regular))
+                            .font(.system(size: 13, weight: selection == state ? .semibold : .regular))
                         
                         if selection == state {
-                            Text("12") // Replace with actual count
+                            Text("\(countFor(state))")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(selection == state ? backgroundColor : Color.clear)
-                    .foregroundColor(selection == state ? .primary : .secondary)
+                    .frame(height: 32)
                 }
                 .buttonStyle(PlainButtonStyle())
+                .foregroundColor(selection == state ? .primary : .secondary)
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.5))
-        )
+        .padding(.horizontal, 20)
     }
     
-    private var backgroundColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.06)
+    private func countFor(_ state: TaskViewState) -> Int {
+        switch state {
+        case .active: return activeTasks
+        case .completed: return completedTasks
+        case .backlog: return backlogTasks
+        }
     }
 }
 

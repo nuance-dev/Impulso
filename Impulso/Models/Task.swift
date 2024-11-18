@@ -161,9 +161,9 @@ public enum MetricType: String, CaseIterable, Identifiable {
         switch self {
         case .impact: return "bolt.fill"
         case .fun: return "star.fill"
-        case .momentum: return "speedometer"
-        case .alignment: return "arrow.up.right"
-        case .effort: return "clock.fill"
+        case .momentum: return "gauge.medium"
+        case .alignment: return "scope"
+        case .effort: return "timer"
         }
     }
     
@@ -184,6 +184,26 @@ public enum MetricType: String, CaseIterable, Identifiable {
         case .momentum: return "Momentum"
         case .alignment: return "Alignment"
         case .effort: return "Effort"
+        }
+    }
+    
+    var shortTitle: String {
+        switch self {
+        case .impact: return "Impact"
+        case .fun: return "Fun"
+        case .momentum: return "Flow"
+        case .alignment: return "Align"
+        case .effort: return "Effort"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .impact: return "How much impact will this task have on the project or team?"
+        case .fun: return "How enjoyable or engaging is this task?"
+        case .momentum: return "Will this task help maintain project momentum?"
+        case .alignment: return "How well does this align with current goals?"
+        case .effort: return "How much effort is required to complete this?"
         }
     }
 }

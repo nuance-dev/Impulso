@@ -9,7 +9,12 @@ struct ImpulsoView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                TaskViewSelector(selection: $viewModel.currentViewState)
+                TaskViewSelector(
+                    selection: $viewModel.currentViewState,
+                    activeTasks: viewModel.activeTaskCount,
+                    completedTasks: viewModel.completedTaskCount,
+                    backlogTasks: viewModel.backlogTaskCount
+                )
                 Spacer()
                 
                 Button(action: { showingCommandMenu = true }) {

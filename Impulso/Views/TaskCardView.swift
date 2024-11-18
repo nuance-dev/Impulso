@@ -6,6 +6,7 @@ struct TaskCardView: View {
     var onMetricUpdate: (TaskMetrics) -> Void
     var onFocusToggle: () -> Void
     var onComplete: () -> Void
+    var onMoveToBacklog: () -> Void
     
     @Environment(\.colorScheme) private var colorScheme
     
@@ -17,15 +18,15 @@ struct TaskCardView: View {
             
             // Task Details
             VStack(alignment: .leading, spacing: 4) {
-                Text(task.taskDescription!)
-                    .font(.system(size: 14))
-                    .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
-                    .strikethrough(task.isCompleted)
-                
-                if isHovered {
-                    Text("Priority: \(Int(task.priorityScore))")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary.opacity(0.7))
+                HStack(spacing: 8) {
+                    Text(task.taskDescription!)
+                        .font(.system(size: 14))
+                        .foregroundColor(task.isCompleted ? .secondary.opacity(0.7) : .primary)
+                        .strikethrough(task.isCompleted)
+                    
+                    if task.priorityScore > 0 {
+                        PriorityBadge(score: task.priorityScore)
+                    }
                 }
             }
             
@@ -48,13 +49,34 @@ struct TaskCardView: View {
         .frame(height: 44)
         .background(
             Group {
-                if isHovered {
+                if task.isFocused {
+                    Color.yellow.opacity(0.05)
+                } else if isHovered {
                     Color(NSColor.selectedContentBackgroundColor).opacity(0.1)
                 } else {
                     Color.clear
                 }
             }
         )
+        .overlay(
+            Group {
+                if task.isFocused {
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
+                }
+            }
+        )
+        .contextMenu {
+            if !task.isBacklogged {
+                Button(action: onMoveToBacklog) {
+                    Label("Move to Backlog", systemImage: "archivebox")
+                }
+            }
+            Button(action: onFocusToggle) {
+                Label(task.isFocused ? "Remove Focus" : "Focus Task", 
+                      systemImage: task.isFocused ? "star.slash" : "star")
+            }
+        }
     }
 }
 

@@ -10,9 +10,9 @@ struct TaskInputField: View {
         HStack(spacing: 12) {
             Image(systemName: "plus.circle.fill")
                 .font(.system(size: 14))
-                .foregroundColor(.secondary.opacity(0.6))
+                .foregroundColor(.blue.opacity(0.8))
             
-            TextField("Press ⌘N or click here to create a task...", text: $text)
+            TextField("Press ⌘N or type here to create a task...", text: $text)
                 .font(.system(size: 14))
                 .textFieldStyle(PlainTextFieldStyle())
                 .focused($isFocused)
@@ -22,7 +22,7 @@ struct TaskInputField: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.5))
+                .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.primary.opacity(0.06), lineWidth: 1)

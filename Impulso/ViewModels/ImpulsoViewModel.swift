@@ -21,7 +21,11 @@ class ImpulsoViewModel: ObservableObject {
     @Published var draggedTask: ImpulsoTask?
     @Published var draggedToIndex: Int?
     @Published var sortPreference: SortPreference = .manual
-    @Published var currentViewState: TaskViewState = .active
+    @Published var currentViewState: TaskViewState = .active {
+        didSet {
+            fetchTasks()
+        }
+    }
     
     // OUTPUTS
     @Published private(set) var tasks: [ImpulsoTask] = []
@@ -62,7 +66,7 @@ class ImpulsoViewModel: ObservableObject {
         task.taskDescription = description
         task.createdAt = Date()
         task.order = Int32(tasks.count)
-        task.isBacklogged = false
+        task.isBacklogged = currentViewState == .backlog
         task.isFocused = false
         
         // Add initial metrics
@@ -223,7 +227,7 @@ class ImpulsoViewModel: ObservableObject {
     }
     
     private func fetchTasks() {
-        print("Fetching tasks...")
+        print("Fetching tasks for state: \(currentViewState)")
         isLoading = true
         
         let fetchRequest: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
@@ -238,14 +242,24 @@ class ImpulsoViewModel: ObservableObject {
             fetchRequest.predicate = NSPredicate(format: "isBacklogged == true")
         }
         
-        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)]
+        // Add appropriate sort descriptors
+        switch currentViewState {
+        case .completed:
+            fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ImpulsoTask.completedAt, ascending: false)]
+        default:
+            if sortPreference == .priority {
+                fetchRequest.sortDescriptors = [
+                    NSSortDescriptor(keyPath: \ImpulsoTask.priorityScore, ascending: false),
+                    NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)
+                ]
+            } else {
+                fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ImpulsoTask.order, ascending: true)]
+            }
+        }
         
         do {
             tasks = try persistenceController.container.viewContext.fetch(fetchRequest)
             print("Fetched \(tasks.count) tasks")
-            tasks.forEach { task in
-                print("Task: \(task.taskDescription ?? "nil")")
-            }
             isLoading = false
         } catch {
             print("Error fetching tasks: \(error)")
@@ -288,6 +302,19 @@ class ImpulsoViewModel: ObservableObject {
         } catch {
             self.error = error
         }
+    }
+    
+    // Change these computed properties
+    var activeTaskCount: Int {
+        tasks.filter { !$0.isCompleted && !$0.isBacklogged }.count
+    }
+    
+    var completedTaskCount: Int {
+        tasks.filter { $0.isCompleted }.count
+    }
+    
+    var backlogTaskCount: Int {
+        tasks.filter { $0.isBacklogged }.count
     }
 }
 

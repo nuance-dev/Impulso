@@ -23,6 +23,9 @@ struct TaskRowView: View {
             },
             onComplete: {
                 viewModel.completeTask(task)
+            },
+            onMoveToBacklog: {
+                viewModel.moveToBacklog(task)
             }
         )
         .onHover { isHovered in
