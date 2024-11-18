@@ -19,13 +19,15 @@ struct TaskViewSelector: View {
                         Text(state.title)
                             .font(.system(size: 13, weight: selection == state ? .semibold : .regular))
                         
-                        Text("\(countFor(state))")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.secondary.opacity(0.1))
-                            .cornerRadius(4)
+                        if selection == state {
+                            Text("\(countFor(state))")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.1))
+                                .cornerRadius(4)
+                        }
                     }
                     .frame(height: 32)
                 }

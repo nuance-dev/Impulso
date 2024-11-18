@@ -105,7 +105,10 @@ struct TaskCardView: View {
             .contextMenu {
                 if !task.isBacklogged {
                     Button(action: onMoveToBacklog) {
-                        Label("Move to Backlog", systemImage: "archivebox")
+                        Label(
+                            task.isBacklogged ? "Restore from Backlog" : "Move to Backlog",
+                            systemImage: task.isBacklogged ? "tray.and.arrow.up" : "archivebox"
+                        )
                     }
                 }
                 Button(action: onFocusToggle) {

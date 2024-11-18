@@ -126,6 +126,9 @@ struct TaskDetailView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.04), lineWidth: 1)
         )
+        .frame(width: 520, height: 600)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.2), radius: 20)
         .alert("Delete Task", isPresented: $showingDeleteConfirm) {
             Button("Delete", role: .destructive, action: onDelete)
             Button("Cancel", role: .cancel) { }

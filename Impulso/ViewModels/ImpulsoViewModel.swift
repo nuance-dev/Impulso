@@ -247,6 +247,38 @@ class ImpulsoViewModel: ObservableObject {
         }
     }
     
+    func toggleTaskCompletion(_ task: ImpulsoTask) {
+        let context = persistenceController.container.viewContext
+        
+        if task.completedAt != nil {
+            // Uncomplete the task
+            task.completedAt = nil
+            
+            // If the task was focused before completion, restore focus
+            if task.isFocused {
+                // Unfocus any other focused task first
+                if let currentFocused = focusedTask {
+                    currentFocused.isFocused = false
+                }
+                focusedTask = task
+            }
+        } else {
+            // Complete the task
+            task.completedAt = Date()
+            
+            if focusedTask?.id == task.id {
+                focusedTask = nil
+            }
+        }
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
     // MARK: - Private Implementation
     
     private func setupSubscriptions() {

@@ -25,7 +25,11 @@ struct TaskRowView: View {
                 viewModel.completeTask(task)
             },
             onMoveToBacklog: {
-                viewModel.moveToBacklog(task)
+                if task.isBacklogged {
+                    viewModel.restoreFromBacklog(task)
+                } else {
+                    viewModel.moveToBacklog(task)
+                }
             },
             onDelete: {
                 viewModel.deleteTask(task)
