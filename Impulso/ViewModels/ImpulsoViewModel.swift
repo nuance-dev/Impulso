@@ -233,10 +233,18 @@ class ImpulsoViewModel: ObservableObject {
     
     func deleteTask(_ task: ImpulsoTask) {
         let context = persistenceController.container.viewContext
+        
+        // Clear any references first
+        if focusedTask?.id == task.id {
+            focusedTask = nil
+        }
+        
+        // Remove the task
         context.delete(task)
         
         do {
             try context.save()
+            // Fetch tasks after successful deletion
             fetchTasks()
         } catch {
             self.error = error
