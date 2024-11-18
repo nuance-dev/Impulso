@@ -108,16 +108,36 @@ class ImpulsoViewModel: ObservableObject {
     func focusTask(_ task: ImpulsoTask) {
         guard focusedTask?.id != task.id else { return }
         
+        let context = persistenceController.container.viewContext
+        
+        // Update the task's focus state
+        task.isFocused = true
         focusedTask = task
-        updateTaskOrder()
+        
+        do {
+            try context.save()
+            updateTaskOrder()
+        } catch {
+            self.error = error
+        }
     }
     
     /// Removes focus from a task
     func unfocusTask(_ task: ImpulsoTask) {
         guard focusedTask?.id == task.id else { return }
         
+        let context = persistenceController.container.viewContext
+        
+        // Update the task's focus state
+        task.isFocused = false
         focusedTask = nil
-        updateTaskOrder()
+        
+        do {
+            try context.save()
+            updateTaskOrder()
+        } catch {
+            self.error = error
+        }
     }
     
     /// Marks a task as completed
@@ -162,15 +182,18 @@ class ImpulsoViewModel: ObservableObject {
         let context = persistenceController.container.viewContext
         
         // Toggle the focus state
+        task.isFocused = !task.isFocused
+        
+        // Update focusedTask reference
         if task.isFocused {
-            unfocusTask(task)
+            focusedTask = task
         } else {
-            focusTask(task)
+            focusedTask = nil
         }
         
         do {
             try context.save()
-            fetchTasks()
+            updateTaskOrder() // This will handle the reordering
         } catch {
             self.error = error
         }
