@@ -223,6 +223,30 @@ class ImpulsoViewModel: ObservableObject {
         }
     }
     
+    func deleteTask(_ task: ImpulsoTask) {
+        let context = persistenceController.container.viewContext
+        context.delete(task)
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
+    func updateTaskNotes(_ task: ImpulsoTask, notes: String) {
+        let context = persistenceController.container.viewContext
+        task.taskNotes = notes.isEmpty ? nil : notes
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
     // MARK: - Private Implementation
     
     private func setupSubscriptions() {

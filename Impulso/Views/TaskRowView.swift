@@ -26,6 +26,12 @@ struct TaskRowView: View {
             },
             onMoveToBacklog: {
                 viewModel.moveToBacklog(task)
+            },
+            onDelete: {
+                viewModel.deleteTask(task)
+            },
+            onNotesUpdate: { notes in
+                viewModel.updateTaskNotes(task, notes: notes)
             }
         )
         .onHover { isHovered in

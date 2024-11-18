@@ -10,7 +10,7 @@ struct TaskInputField: View {
         HStack(spacing: 12) {
             Image(systemName: "plus.circle.fill")
                 .font(.system(size: 14))
-                .foregroundColor(.blue.opacity(0.8))
+                .foregroundColor(.white.opacity(0.8))
             
             TextField("Press ⌘N or type here to create a task...", text: $text)
                 .font(.system(size: 14))

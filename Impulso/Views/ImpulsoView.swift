@@ -17,21 +17,33 @@ struct ImpulsoView: View {
                 )
                 Spacer()
                 
-                Button(action: { showingCommandMenu = true }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "magnifyingglass")
-                        Text("Search")
-                        Text("⌘K")
-                            .foregroundColor(.secondary)
+                HStack(spacing: 8) {
+                    Button(action: { showingCommandMenu = true }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 12))
+                            Text("Search or create")
+                                .font(.system(size: 12))
+                            Text("⌘K")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.1))
+                                .cornerRadius(4)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                        .cornerRadius(6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                        )
                     }
-                    .font(.system(size: 13))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(6)
+                    .buttonStyle(PlainButtonStyle())
+                    .keyboardShortcut("k", modifiers: .command)
                 }
-                .buttonStyle(PlainButtonStyle())
-                .keyboardShortcut("k", modifiers: .command)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)

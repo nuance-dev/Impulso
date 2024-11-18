@@ -15,15 +15,17 @@ struct TaskViewSelector: View {
                         selection = state
                     }
                 }) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
                         Text(state.title)
                             .font(.system(size: 13, weight: selection == state ? .semibold : .regular))
                         
-                        if selection == state {
-                            Text("\(countFor(state))")
-                                .font(.system(size: 12))
-                                .foregroundColor(.secondary)
-                        }
+                        Text("\(countFor(state))")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.secondary.opacity(0.1))
+                            .cornerRadius(4)
                     }
                     .frame(height: 32)
                 }
@@ -32,6 +34,7 @@ struct TaskViewSelector: View {
             }
         }
         .padding(.horizontal, 20)
+        .padding(.top, 28)
     }
     
     private func countFor(_ state: TaskViewState) -> Int {
