@@ -1,6 +1,7 @@
 # Impulso - A Native MacOS Task Management App
 
-![App Icon](assets/app-icon.png)
+![ImpulsoBanner](https://github.com/user-attachments/assets/884ca72a-05f3-4051-926f-4fcb69559628)
+
 
 A sleek, native macOS app for managing tasks with intelligent priority scoring and flexible organization options. Built with SwiftUI for optimal performance and a modern user experience.
 
