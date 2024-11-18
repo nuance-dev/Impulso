@@ -6,6 +6,14 @@ enum TaskViewState {
     case active
     case completed
     case backlog
+    
+    var dropAllowed: Bool {
+        switch self {
+        case .active: return true
+        case .backlog: return true
+        case .completed: return false
+        }
+    }
 }
 
 class ImpulsoViewModel: ObservableObject {
@@ -250,18 +258,9 @@ class ImpulsoViewModel: ObservableObject {
     func toggleTaskCompletion(_ task: ImpulsoTask) {
         let context = persistenceController.container.viewContext
         
-        if task.completedAt != nil {
+        if task.isCompleted {
             // Uncomplete the task
             task.completedAt = nil
-            
-            // If the task was focused before completion, restore focus
-            if task.isFocused {
-                // Unfocus any other focused task first
-                if let currentFocused = focusedTask {
-                    currentFocused.isFocused = false
-                }
-                focusedTask = task
-            }
         } else {
             // Complete the task
             task.completedAt = Date()
@@ -269,6 +268,29 @@ class ImpulsoViewModel: ObservableObject {
             if focusedTask?.id == task.id {
                 focusedTask = nil
             }
+        }
+        
+        do {
+            try context.save()
+            fetchTasks()
+        } catch {
+            self.error = error
+        }
+    }
+    
+    func moveTaskToState(_ task: ImpulsoTask, state: TaskViewState) {
+        let context = persistenceController.container.viewContext
+        
+        switch state {
+        case .backlog:
+            task.isBacklogged = true
+            task.completedAt = nil
+        case .active:
+            task.isBacklogged = false
+            task.completedAt = nil
+        case .completed:
+            // Don't allow direct moves to completed
+            return
         }
         
         do {

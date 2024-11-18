@@ -7,6 +7,7 @@ struct TaskRowView: View {
     let taskCardHeight: CGFloat
     @Binding var hoveredTaskId: UUID?
     let viewModel: ImpulsoViewModel
+    @State private var expandedHeight: CGFloat = 0
     
     var body: some View {
         TaskCardView(
@@ -35,13 +36,18 @@ struct TaskRowView: View {
                 viewModel.deleteTask(task)
             },
             onNotesUpdate: { notes in
-                viewModel.updateTaskNotes(task, notes: notes)
+                viewModel.updateTaskNotes(task, notes: notes!)
+            },
+            onExpandedHeightChange: { height in
+                withAnimation(.spring(response: 0.3)) {
+                    expandedHeight = height
+                }
             }
         )
         .onHover { isHovered in
             hoveredTaskId = isHovered ? task.id : nil
         }
-        .frame(minHeight: taskCardHeight)
+        .frame(minHeight: taskCardHeight + expandedHeight)
         .padding(.horizontal)
         .opacity(viewModel.draggedTask?.id == task.id ? 0 : 1)
         .animation(.easeInOut(duration: 0.2), value: viewModel.draggedTask?.id)
