@@ -90,6 +90,10 @@ struct ImpulsoView: View {
         .background(
             VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow)
         )
+        .keyboardShortcut("n", modifiers: .command)
+        .onTapGesture {
+            showingCommandMenu = false
+        }
     }
     
     private var emptyStateView: some View {

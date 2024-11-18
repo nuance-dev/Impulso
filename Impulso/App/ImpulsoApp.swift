@@ -38,29 +38,9 @@ struct ImpulsoApp: App {
         }
         .windowStyle(HiddenTitleBarWindowStyle())
         .commands {
-            CommandGroup(after: .appInfo) {
-                Button("Check for Updates...") {
-                    showingUpdateSheet = true
-                    menuBarController.updater.checkForUpdates()
-                }
-                .keyboardShortcut("U", modifiers: [.command])
-                
-                if menuBarController.updater.updateAvailable {
-                    Button("Download Update") {
-                        if let url = menuBarController.updater.downloadURL {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-                
-                Divider()
-            }
-            
-            // Add backup-related commands
-            CommandGroup(after: .newItem) {
-                Button("Create Backup", action: performBackup)
-                    .keyboardShortcut("B", modifiers: [.command])
-            }
+            CommandGroup(replacing: .newItem) {
+        // Empty group to disable default Command+N
+    }
         }
         
         Settings {

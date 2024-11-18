@@ -4,8 +4,10 @@ struct CommandMenu: View {
     @Binding var isPresented: Bool
     let onSubmit: (String) -> Void
     @State private var text = ""
+    @State private var filteredTasks: [ImpulsoTask] = []
     @FocusState private var isFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.managedObjectContext) private var viewContext
     
     var body: some View {
         VStack(spacing: 0) {
@@ -18,6 +20,9 @@ struct CommandMenu: View {
                     .font(.system(size: 14))
                     .textFieldStyle(PlainTextFieldStyle())
                     .focused($isFocused)
+                    .onChange(of: text) { _, newValue in
+                        filterTasks(query: newValue)
+                    }
                     .onSubmit {
                         if !text.isEmpty {
                             onSubmit(text)
@@ -38,30 +43,75 @@ struct CommandMenu: View {
             
             Divider()
             
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Create new...")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                
-                Button(action: {
-                    onSubmit("New Task")
-                    isPresented = false
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.blue)
-                        Text("Create Task")
-                        Spacer()
-                        Text("⌘N")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    if text.isEmpty {
+                        Text("Create new...")
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                        
+                        Button(action: {
+                            onSubmit("New Task")
+                            isPresented = false
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Create Task")
+                                Spacer()
+                                Text("⌘N")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                        }
+                        .buttonStyle(CommandMenuButtonStyle())
+                    } else {
+                        ForEach(filteredTasks) { task in
+                            Button(action: {
+                                task.isFocused = true
+                                try? viewContext.save()
+                                isPresented = false
+                            }) {
+                                HStack {
+                                    Text(task.taskDescription ?? "")
+                                        .font(.system(size: 14))
+                                    Spacer()
+                                    if task.isFocused {
+                                        Image(systemName: "star.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.yellow)
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(CommandMenuButtonStyle())
+                        }
+                        
+                        if filteredTasks.isEmpty {
+                            Button(action: {
+                                onSubmit(text)
+                                isPresented = false
+                            }) {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(.blue)
+                                    Text("Create \"\(text)\"")
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                            }
+                            .buttonStyle(CommandMenuButtonStyle())
+                        }
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
                 }
-                .buttonStyle(CommandMenuButtonStyle())
             }
+            .frame(maxHeight: 300)
         }
         .frame(width: 480)
         .background(
@@ -73,6 +123,26 @@ struct CommandMenu: View {
             isFocused = true
         }
     }
+    
+    private func filterTasks(query: String) {
+        guard !query.isEmpty else {
+            filteredTasks = []
+            return
+        }
+        
+        let fetchRequest: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
+        fetchRequest.predicate = NSPredicate(
+            format: "taskDescription CONTAINS[cd] %@", query
+        )
+        fetchRequest.fetchLimit = 5
+        
+        do {
+            filteredTasks = try viewContext.fetch(fetchRequest)
+        } catch {
+            print("Error filtering tasks: \(error)")
+            filteredTasks = []
+        }
+    }
 }
 
 struct CommandMenuButtonStyle: ButtonStyle {
@@ -80,11 +150,11 @@ struct CommandMenuButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? backgroundColor : Color.clear)
+            .background(
+                configuration.isPressed ? 
+                    (colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05)) : 
+                    Color.clear
+            )
             .contentShape(Rectangle())
-    }
-    
-    private var backgroundColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05)
     }
 } 
