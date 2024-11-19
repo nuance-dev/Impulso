@@ -17,6 +17,8 @@ Note: This app requires macOS version 14.5+
 - **Automatic Backups**: Configurable backup frequency to keep your data safe
 - **Data Import/Export**: Easy data portability with JSON import/export options
 
+https://github.com/user-attachments/assets/d564a2a7-16dc-4991-bc57-3203495f844e
+
 ## Task Management
 
 - Focus important tasks
