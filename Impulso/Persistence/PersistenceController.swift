@@ -81,32 +81,35 @@ class PersistenceController {
     // MARK: - Backup Management
     
     func createBackup() async throws -> URL {
-        // Create timestamped backup file
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let backupURL = backupDirectoryURL.appendingPathComponent("Impulso_\(timestamp).backup")
-        
-        // Ensure backup directory exists
-        try FileManager.default.createDirectory(
-            at: backupDirectoryURL,
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-        
-        // Save the context to ensure all changes are persisted
-        let context = container.viewContext
-        if context.hasChanges {
-            try context.save()
+        return try await withCheckedThrowingContinuation { continuation in
+            let context = container.newBackgroundContext()
+            
+            context.performAndWait {
+                do {
+                    let timestamp = ISO8601DateFormatter().string(from: Date())
+                    let backupURL = backupDirectoryURL.appendingPathComponent("Impulso_\(timestamp).backup")
+                    
+                    try FileManager.default.createDirectory(
+                        at: backupDirectoryURL,
+                        withIntermediateDirectories: true,
+                        attributes: nil
+                    )
+                    
+                    if context.hasChanges {
+                        try context.save()
+                    }
+                    
+                    guard let storeURL = container.persistentStoreDescriptions.first?.url else {
+                        throw BackupError.exportFailed
+                    }
+                    
+                    try FileManager.default.copyItem(at: storeURL, to: backupURL)
+                    continuation.resume(returning: backupURL)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
-        
-        // Get the store URL
-        guard let storeURL = container.persistentStoreDescriptions.first?.url else {
-            throw BackupError.exportFailed
-        }
-        
-        // Copy the store file to backup location
-        try FileManager.default.copyItem(at: storeURL, to: backupURL)
-        
-        return backupURL
     }
     
     func restoreFromBackup(at url: URL) async throws {
@@ -158,41 +161,49 @@ class PersistenceController {
     func exportData() async throws -> URL {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = .prettyPrinted
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         
         let fetchRequest: NSFetchRequest<ImpulsoTask> = ImpulsoTask.fetchRequest()
-        
         let tasks = try container.viewContext.fetch(fetchRequest)
         let taskData = try encoder.encode(tasks.map(TaskData.init))
         
-        let exportURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("Impulso_Export_\(Date().timeIntervalSince1970).json")
+        // Create a unique filename with safe characters
+        let timestamp = Date().formatForFilename()
+        let filename = "Impulso_Export_\(timestamp).json"
         
-        try taskData.write(to: exportURL)
+        // Use the documents directory instead of temporary
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let exportURL = documentsURL.appendingPathComponent(filename)
+        
+        try taskData.write(to: exportURL, options: .atomic)
         return exportURL
     }
     
     func importData(from url: URL) async throws {
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            throw BackupError.fileNotFound
+        }
+        
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
         let taskData = try decoder.decode([TaskData].self, from: data)
         
-        // Create new background context for import
         let importContext = container.newBackgroundContext()
-        
         try await importContext.perform {
-            // Create new tasks from imported data
+            // Clear existing tasks first
+            let fetchRequest: NSFetchRequest<NSFetchRequestResult> = ImpulsoTask.fetchRequest()
+            let batchDelete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            try importContext.execute(batchDelete)
+            
+            // Import new tasks
             for taskInfo in taskData {
                 let newTask = ImpulsoTask(context: importContext)
                 newTask.update(from: taskInfo)
             }
             
-            // Save imported tasks
-            if importContext.hasChanges {
-                try importContext.save()
-            }
+            try importContext.save()
         }
     }
     

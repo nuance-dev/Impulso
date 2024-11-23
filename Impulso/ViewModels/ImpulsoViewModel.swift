@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import CoreData
+import SwiftUI
 
 enum TaskViewState {
     case active
@@ -12,6 +13,14 @@ enum TaskViewState {
         case .active: return true
         case .backlog: return true
         case .completed: return false
+        }
+    }
+    
+    var dropAreaID: String {
+        switch self {
+        case .active: return "active-drop-area"
+        case .backlog: return "backlog-drop-area"
+        case .completed: return "completed-drop-area"
         }
     }
 }
@@ -106,7 +115,7 @@ class ImpulsoViewModel: ObservableObject {
         
         do {
             try context.save()
-            fetchTasks()
+            updateTaskOrder()
         } catch {
             self.error = error
         }
@@ -124,7 +133,7 @@ class ImpulsoViewModel: ObservableObject {
         
         do {
             try context.save()
-            fetchTasks()
+            updateTaskOrder()
         } catch {
             self.error = error
         }
@@ -289,6 +298,7 @@ class ImpulsoViewModel: ObservableObject {
     func moveTaskToState(_ task: ImpulsoTask, state: TaskViewState) {
         let context = persistenceController.container.viewContext
         
+        // Perform state transition
         switch state {
         case .backlog:
             task.isBacklogged = true
@@ -297,13 +307,17 @@ class ImpulsoViewModel: ObservableObject {
             task.isBacklogged = false
             task.completedAt = nil
         case .completed:
-            // Don't allow direct moves to completed
-            return
+            return // Don't allow direct moves to completed
         }
         
+        // Save changes immediately
         do {
             try context.save()
-            fetchTasks()
+            
+            // Update UI with animation
+            withAnimation(.spring(response: 0.3)) {
+                fetchTasks()
+            }
         } catch {
             self.error = error
         }
@@ -406,11 +420,14 @@ class ImpulsoViewModel: ObservableObject {
         }
     }
     
-    private func saveContext() {
-        do {
-            try persistenceController.container.viewContext.save()
-        } catch {
-            self.error = error
+    private func batchSaveContext() {
+        let context = persistenceController.container.viewContext
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                self.error = error
+            }
         }
     }
     

@@ -40,7 +40,7 @@ class MenuBarController: NSObject, ObservableObject {
     }
     
     @objc private func checkForUpdates() {
-        updater.checkForUpdates()
+        self.updater.checkForUpdates()
     }
     
     @objc private func downloadUpdate() {

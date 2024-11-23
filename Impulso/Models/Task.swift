@@ -4,7 +4,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 // MARK: - TaskMetrics Definition
-public struct TaskMetrics: Codable, Equatable {
+public struct TaskMetrics: Codable, Equatable, Hashable {
     var impact: MetricValue
     var fun: MetricValue
     var momentum: MetricValue

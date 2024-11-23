@@ -23,7 +23,7 @@ struct TaskRowView: View {
                 viewModel.toggleTaskFocus(task)
             },
             onComplete: {
-                viewModel.completeTask(task)
+                viewModel.toggleTaskCompletion(task)
             },
             onMoveToBacklog: {
                 if task.isBacklogged {
@@ -49,10 +49,14 @@ struct TaskRowView: View {
         }
         .frame(minHeight: taskCardHeight + expandedHeight)
         .padding(.horizontal)
-        .opacity(viewModel.draggedTask?.id == task.id ? 0 : 1)
+        .opacity(viewModel.draggedTask?.id == task.id ? 0.3 : 1)
         .animation(.easeInOut(duration: 0.2), value: viewModel.draggedTask?.id)
         .onDrag {
-            viewModel.draggedTask = task
+            if viewModel.draggedTask == nil {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    viewModel.draggedTask = task
+                }
+            }
             return NSItemProvider(object: task.id!.uuidString as NSString)
         }
         .onDrop(of: [.text], delegate: TaskDropDelegate(

@@ -95,13 +95,15 @@ private struct TaskDropDelegate: DropDelegate {
             return false
         }
         
-        var updatedTasks = tasks
-        updatedTasks.remove(at: fromIndex)
-        updatedTasks.insert(draggedTask, at: toIndex)
-        
-        onReorder(updatedTasks)
-        self.draggedTask = nil
-        self.targetIndex = nil
+        DispatchQueue.main.async {
+            var updatedTasks = tasks
+            updatedTasks.remove(at: fromIndex)
+            updatedTasks.insert(draggedTask, at: toIndex)
+            
+            onReorder(updatedTasks)
+            self.draggedTask = nil
+            self.targetIndex = nil
+        }
         
         return true
     }
@@ -143,5 +145,66 @@ private struct TaskDropDelegate: DropDelegate {
         // Add buffer zone for better drop targeting
         let buffer: CGFloat = spacing / 2
         return location.y >= (yPosition - buffer) && location.y <= (yPosition + totalItemHeight + buffer)
+    }
+}
+
+struct StateDropAreaModifier: ViewModifier {
+    let state: TaskViewState
+    let viewModel: ImpulsoViewModel
+    @State private var isTargeted = false
+    
+    func body(content: Content) -> some View {
+        content
+            .onDrop(of: [.text], delegate: StateDropDelegate(
+                targetState: state,
+                viewModel: viewModel,
+                isTargeted: $isTargeted
+            ))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.blue.opacity(isTargeted ? 0.3 : 0),
+                           lineWidth: 2)
+                    .animation(.easeOut(duration: 0.2), value: isTargeted)
+            )
+    }
+}
+
+struct StateDropDelegate: DropDelegate {
+    let targetState: TaskViewState
+    let viewModel: ImpulsoViewModel
+    @Binding var isTargeted: Bool
+    
+    func performDrop(info: DropInfo) -> Bool {
+        guard let draggedTask = viewModel.draggedTask else { return false }
+        
+        // Don't allow dropping into completed state
+        if targetState == .completed { return false }
+        
+        withAnimation(.spring(response: 0.3)) {
+            viewModel.moveTaskToState(draggedTask, state: targetState)
+            viewModel.draggedTask = nil
+            viewModel.draggedToIndex = nil
+            isTargeted = false
+        }
+        
+        return true
+    }
+    
+    func dropEntered(info: DropInfo) {
+        guard viewModel.draggedTask != nil else { return }
+        withAnimation(.easeOut(duration: 0.2)) {
+            isTargeted = true
+        }
+    }
+    
+    func dropExited(info: DropInfo) {
+        withAnimation(.easeOut(duration: 0.2)) {
+            isTargeted = false
+        }
+    }
+    
+    func validateDrop(info: DropInfo) -> Bool {
+        guard let draggedTask = viewModel.draggedTask else { return false }
+        return targetState.dropAllowed
     }
 }

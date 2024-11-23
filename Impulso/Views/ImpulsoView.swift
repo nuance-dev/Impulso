@@ -8,14 +8,14 @@ struct ImpulsoView: View {
     
     // Add this to handle keyboard shortcuts
     class KeyboardShortcuts {
-        static func setup(action: @escaping () -> Void) -> Any {
+        static func setup(action: @escaping () -> Void) -> NSObjectProtocol {
             NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "n" {
                     action()
                     return nil
                 }
                 return event
-            }
+            } as! NSObjectProtocol
         }
     }
     
@@ -27,7 +27,8 @@ struct ImpulsoView: View {
                     selection: $viewModel.currentViewState,
                     activeTasks: viewModel.activeTaskCount,
                     completedTasks: viewModel.completedTaskCount,
-                    backlogTasks: viewModel.backlogTaskCount
+                    backlogTasks: viewModel.backlogTaskCount,
+                    viewModel: viewModel
                 )
                 Spacer()
                 
@@ -87,6 +88,7 @@ struct ImpulsoView: View {
             // Task List
             if viewModel.tasks.isEmpty {
                 emptyStateView
+                    .modifier(StateDropAreaModifier(state: viewModel.currentViewState, viewModel: viewModel))
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8, pinnedViews: []) {
@@ -104,18 +106,22 @@ struct ImpulsoView: View {
                               value: viewModel.tasks)
                     .padding(.vertical, 8)
                 }
+                .modifier(StateDropAreaModifier(state: viewModel.currentViewState, viewModel: viewModel))
             }
         }
         .overlay {
             if showingCommandMenu {
-                Color.black.opacity(0.2)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        showingCommandMenu = false
-                    }
-                
-                CommandMenu(isPresented: $showingCommandMenu, onSubmit: viewModel.addTask)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ZStack {
+                    Color.black.opacity(0.2)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingCommandMenu = false
+                        }
+                    
+                    CommandMenu(isPresented: $showingCommandMenu, onSubmit: viewModel.addTask)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 100)
+                }
             }
         }
         .background(

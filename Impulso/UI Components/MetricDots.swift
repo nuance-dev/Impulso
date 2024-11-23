@@ -36,6 +36,7 @@ struct MetricDot: View {
     @State private var showPopover = false
     @State private var currentSelection: TaskMetrics.MetricValue
     @State private var hideTimer: Timer?
+    @State private var popoverId = UUID()
     @Environment(\.colorScheme) private var colorScheme
     
     init(type: MetricType, value: TaskMetrics.MetricValue, onUpdate: @escaping (TaskMetrics.MetricValue) -> Void) {
@@ -58,14 +59,27 @@ struct MetricDot: View {
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .onHover { hovering in
             if hovering {
+                // Cancel any pending hide operations
                 hideTimer?.invalidate()
                 hideTimer = nil
-                showPopover = true
+                
+                // Generate new popover ID to ensure clean state
+                popoverId = UUID()
+                
+                // Show popover after a short delay to prevent accidental triggers
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if isHovering {
+                        showPopover = true
+                    }
+                }
                 isHovering = true
             } else {
                 isHovering = false
-                hideTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                    if !isHovering {
+                let currentPopoverId = popoverId
+                
+                // Delay hiding to allow moving to popover
+                hideTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { _ in
+                    if !isHovering && currentPopoverId == popoverId {
                         showPopover = false
                     }
                 }
@@ -78,6 +92,7 @@ struct MetricDot: View {
                 onUpdate: { newValue in
                     currentSelection = newValue
                     onUpdate(newValue)
+                    showPopover = false
                 }
             )
             .onHover { hovering in
@@ -86,8 +101,9 @@ struct MetricDot: View {
                     hideTimer?.invalidate()
                     hideTimer = nil
                 } else {
-                    hideTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                        if !isHovering {
+                    let currentPopoverId = popoverId
+                    hideTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { _ in
+                        if !isHovering && currentPopoverId == popoverId {
                             showPopover = false
                         }
                     }
@@ -96,6 +112,10 @@ struct MetricDot: View {
         }
         .onChange(of: value) { _, newValue in
             currentSelection = newValue
+        }
+        .onDisappear {
+            hideTimer?.invalidate()
+            hideTimer = nil
         }
     }
     
@@ -169,4 +189,3 @@ struct MetricPopover: View {
         .fixedSize()
     }
 }
-

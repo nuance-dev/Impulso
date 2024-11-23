@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct GitHubRelease: Codable {
     let tagName: String
@@ -29,6 +30,7 @@ class UpdateChecker: ObservableObject {
     private let currentVersion: String
     private let githubRepo: String
     private var updateCheckTimer: Timer?
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
             self.currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
@@ -178,5 +180,6 @@ class UpdateChecker: ObservableObject {
     
     deinit {
         updateCheckTimer?.invalidate()
+        cancellables.forEach { $0.cancel() }
     }
 }

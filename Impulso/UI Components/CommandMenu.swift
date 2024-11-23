@@ -8,6 +8,7 @@ struct CommandMenu: View {
     @FocusState private var isFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.managedObjectContext) private var viewContext
+    @State private var searchDebouncer: Timer?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -21,7 +22,7 @@ struct CommandMenu: View {
                     .textFieldStyle(PlainTextFieldStyle())
                     .focused($isFocused)
                     .onChange(of: text) { _, newValue in
-                        filterTasks(query: newValue)
+                        debouncedSearch(newValue)
                     }
                     .onSubmit {
                         if !text.isEmpty {
@@ -122,6 +123,10 @@ struct CommandMenu: View {
         .onAppear {
             isFocused = true
         }
+        .onDisappear {
+            searchDebouncer?.invalidate()
+            searchDebouncer = nil
+        }
     }
     
     private func filterTasks(query: String) {
@@ -141,6 +146,14 @@ struct CommandMenu: View {
         } catch {
             print("Error filtering tasks: \(error)")
             filteredTasks = []
+        }
+    }
+    
+    private func debouncedSearch(_ query: String) {
+        searchDebouncer?.invalidate()
+        searchDebouncer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
+            filterTasks(query: query)
+            searchDebouncer = nil
         }
     }
 }

@@ -9,6 +9,8 @@ struct BackupSettingsView: View {
     @State private var showingDeleteAlert = false
     @State private var selectedBackup: BackupRecord?
     @State private var showingRestoreAlert = false
+    @State private var showingSuccessAlert = false
+    @State private var successMessage = ""
     @Environment(\.dismiss) private var dismiss
     @State private var backupError: String?
     @State private var showingErrorAlert = false
@@ -38,9 +40,19 @@ struct BackupSettingsView: View {
             isPresented: $showingExporter,
             document: JSONExportDocument(backupManager: backupManager),
             contentType: .json,
-            defaultFilename: "Impulso_Export_\(Date().formatted())"
-        ) { _ in
-            // Handle export result if needed
+            defaultFilename: "Impulso_Export_\(Date().formatForFilename()).json"
+        ) { result in
+            switch result {
+            case .success:
+                showSuccess("Data exported successfully")
+            case .failure(let error):
+                showError(error.localizedDescription)
+            }
+        }
+        .alert("Success", isPresented: $showingSuccessAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(successMessage)
         }
         .alert("Delete Backup", isPresented: $showingDeleteAlert) {
             deleteAlertButtons
@@ -100,22 +112,29 @@ struct BackupSettingsView: View {
     }
     
     private var importExportSection: some View {
-        Section(header: Text("Import/Export")) {
-            Button("Export Data") {
-                Task {
-                    do {
-                        let exportURL = try await backupManager.persistenceController.exportData()
-                        showingExporter = true
-                    } catch {
-                        print("Export failed: \(error)")
+        Section {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Data Transfer")
+                    .font(.headline)
+                
+                HStack(spacing: 12) {
+                    Button(action: { showingExporter = true }) {
+                        Label("Export Data", systemImage: "square.and.arrow.up")
                     }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { showingImporter = true }) {
+                        Label("Import Data", systemImage: "square.and.arrow.down")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(backupManager.isBackingUp)
                 }
+                
+                Text("Export your data to transfer between devices or create a backup")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            
-            Button("Import Data") {
-                showingImporter = true
-            }
-            .disabled(backupManager.isBackingUp)
+            .padding(.vertical, 8)
         }
     }
     
@@ -178,29 +197,49 @@ struct BackupSettingsView: View {
     // MARK: - Helper Methods
     
     private func performManualBackup() {
-        Task {
+        Task { @MainActor in
             do {
                 try await backupManager.performManualBackup()
             } catch {
-                await MainActor.run {
-                    backupError = error.localizedDescription
-                    showingErrorAlert = true
-                }
+                backupError = error.localizedDescription
+                showingErrorAlert = true
             }
         }
     }
     
     private func handleImport(_ result: Result<[URL], Error>) {
-        if case .success(let urls) = result,
-           let url = urls.first {
-            Task {
-                do {
-                    try await backupManager.persistenceController.importData(from: url)
-                } catch {
-                    print("Import failed: \(error)")
+    switch result {
+    case .success(let urls):
+        guard let url = urls.first else { return }
+        
+        Task {
+            do {
+                try await backupManager.persistenceController.importData(from: url)
+                await MainActor.run {
+                    showSuccess("Data imported successfully")
+                }
+            } catch {
+                await MainActor.run {
+                    let errorMessage = error.localizedDescription
+                        .replacingOccurrences(of: "The file \"", with: "")
+                        .replacingOccurrences(of: "\" couldn't be opened because", with: "")
+                    showError("Import failed: \(errorMessage)")
                 }
             }
         }
+    case .failure(let error):
+        showError("Import failed: \(error.localizedDescription)")
+    }
+}
+    
+    private func showSuccess(_ message: String) {
+        successMessage = message
+        showingSuccessAlert = true
+    }
+    
+    private func showError(_ message: String) {
+        backupError = message
+        showingErrorAlert = true
     }
 }
 
@@ -216,6 +255,13 @@ struct JSONExportDocument: FileDocument {
     let backupManager: BackupManager
     private let container: ExportDataContainer
     
+    // Required initializer for FileDocument protocol
+    init(configuration: ReadConfiguration) throws {
+        self.backupManager = BackupManager(persistenceController: PersistenceController.shared)
+        self.container = ExportDataContainer()
+    }
+    
+    // Custom initializer for our use
     init(backupManager: BackupManager) {
         self.backupManager = backupManager
         self.container = ExportDataContainer()
@@ -228,13 +274,9 @@ struct JSONExportDocument: FileDocument {
                 let exportURL = try await manager.persistenceController.exportData()
                 dataContainer.data = try Data(contentsOf: exportURL)
             } catch {
-                print("Failed to prepare export data: \(error)")
+                print("Failed to prepare export data: \(error.localizedDescription)")
             }
         }
-    }
-    
-    init(configuration: ReadConfiguration) throws {
-        throw BackupError.invalidBackup
     }
     
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
@@ -271,5 +313,14 @@ struct BackupHistoryRow: View {
             .buttonStyle(.borderless)
         }
         .padding(.vertical, 4)
+    }
+}
+
+// Add this extension to format dates for filenames
+extension Date {
+    func formatForFilename() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        return formatter.string(from: self)
     }
 }

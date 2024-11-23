@@ -5,10 +5,13 @@ class BackupManager: ObservableObject {
     @Published private(set) var lastBackupDate: Date?
     @Published private(set) var backupHistory: [BackupRecord] = []
     @Published private(set) var isBackingUp: Bool = false
+    @Published private(set) var lastError: String?
     
     let persistenceController: PersistenceController
     private var backupTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
+    private var backupStateSubject = PassthroughSubject<BackupState, Never>()
+    private var backupProgressSubject = CurrentValueSubject<Double, Never>(0.0)
     
     init(persistenceController: PersistenceController) {
         self.persistenceController = persistenceController
@@ -27,8 +30,8 @@ class BackupManager: ObservableObject {
     func performManualBackup() async throws {
         guard !isBackingUp else { return }
         
-        isBackingUp = true
-        defer { isBackingUp = false }
+        await MainActor.run { isBackingUp = true }
+        defer { Task { @MainActor in isBackingUp = false } }
         
         let backupURL = try await persistenceController.createBackup()
         let record = BackupRecord(date: Date(), url: backupURL)
@@ -72,11 +75,12 @@ class BackupManager: ObservableObject {
         ) { [weak self] _ in
             guard let self = self else { return }
             
-            Task {
+            Task { @MainActor in
                 do {
                     try await self.performManualBackup()
                 } catch {
-                    print("Automatic backup failed: \(error)")
+                    print("Automatic backup failed: \(error.localizedDescription)")
+                    self.lastError = error.localizedDescription
                 }
             }
         }
@@ -101,4 +105,14 @@ class BackupManager: ObservableObject {
     deinit {
         backupTimer?.invalidate()
     }
+}
+
+private var backupStateSubject = PassthroughSubject<BackupState, Never>()
+private var backupProgressSubject = CurrentValueSubject<Double, Never>(0.0)
+
+enum BackupState {
+    case idle
+    case inProgress(progress: Double)
+    case completed(Date)
+    case failed(Error)
 }

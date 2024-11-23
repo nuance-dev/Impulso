@@ -19,6 +19,8 @@ struct PriorityCalculator: PriorityCalculating {
         "effort": 0.1     // 10% weight
     ]
     
+    private var priorityCache = [String: Double]()
+    
     // MARK: - Public Methods
     
     /// Calculates the priority score for a given set of task metrics
@@ -58,6 +60,16 @@ struct PriorityCalculator: PriorityCalculating {
         
         // Round to one decimal place and ensure bounds
         return min(max(round(totalScore * 10) / 10, 0), 100)
+    }
+    
+    mutating func getCachedPriority(for metrics: TaskMetrics) -> Double {
+        let key = "\(metrics.hashValue)"
+        if let cached = priorityCache[key] {
+            return cached
+        }
+        let calculated = calculatePriority(for: metrics)
+        priorityCache[key] = calculated
+        return calculated
     }
     
     // MARK: - Private Methods

@@ -5,6 +5,7 @@ struct TaskViewSelector: View {
     let activeTasks: Int
     let completedTasks: Int
     let backlogTasks: Int
+    let viewModel: ImpulsoViewModel
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -30,9 +31,11 @@ struct TaskViewSelector: View {
                         }
                     }
                     .frame(height: 32)
+                    .padding(.horizontal, 20)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .foregroundColor(selection == state ? .primary : .secondary)
+                .modifier(StateDropAreaModifier(state: state, viewModel: viewModel))
             }
         }
         .padding(.horizontal, 20)
