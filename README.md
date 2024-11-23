@@ -8,11 +8,6 @@ A sleek, native macOS app for managing tasks with intelligent priority scoring a
 Note: This app requires macOS version 14.5+
 
 
-
-https://github.com/user-attachments/assets/35e99133-302d-4baf-88ca-18df9febab28
-
-
-
 ## Features
 
 - **Smart Priority Scoring**: Automatically calculates task priority based on multiple metrics
@@ -23,7 +18,7 @@ https://github.com/user-attachments/assets/35e99133-302d-4baf-88ca-18df9febab28
 - **Automatic Backups**: Configurable backup frequency to keep your data safe
 - **Data Import/Export**: Easy data portability with JSON import/export options
 
-https://github.com/user-attachments/assets/d564a2a7-16dc-4991-bc57-3203495f844e
+https://github.com/user-attachments/assets/35e99133-302d-4baf-88ca-18df9febab28
 
 ## Task Management
 
